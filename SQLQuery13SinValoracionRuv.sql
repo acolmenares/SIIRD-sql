@@ -46,7 +46,7 @@ left join Declaracion_Unidades RUV
 	select top 1 Declaracion_Unidades.Id  from Declaracion_Unidades
 	where Declaracion_Unidades.Id_Declaracion=Declaracion.Id 
 	and Declaracion_Unidades.Id_Unidad=32  -- RUV
-	order by Declaracion_Unidades.Fecha_Investigacion, Declaracion_Unidades.Id desc
+	order by Declaracion_Unidades.Fecha_Investigacion desc, Declaracion_Unidades.Id desc
 	)
 --left join SubTablas EstadoRUV on EstadoRUV.Id= RUV.Id_EstadoUnidad
 

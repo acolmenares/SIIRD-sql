@@ -4,7 +4,7 @@ declare @FechaRadicacionInicial varchar(8)
 declare @FechaRadicacionFinal varchar(8)
 declare @FechaCorte varchar(8)
 
-set @FechaRadicacionInicial = '20151001'
+set @FechaRadicacionInicial = '20160101'
 set @FechaRadicacionFinal =   '20160131'
 set @FechaCorte = @FechaRadicacionFinal
 
@@ -27,7 +27,7 @@ left join Declaracion_Estados de
 	where Declaracion_Estados.Id_Declaracion=Declaracion.Id 
 	and Declaracion_Estados.Id_Tipo_Estado=4036
 	and Declaracion_Estados.Fecha<=@FechaCorte
-	order by Declaracion_Estados.Fecha, Declaracion_estados.Id desc
+	order by Declaracion_Estados.Fecha desc, Declaracion_estados.Id desc
 	)
 
 where

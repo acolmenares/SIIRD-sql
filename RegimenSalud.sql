@@ -77,19 +77,19 @@ left join Personas_Contactos Celular
 	on   Celular.Id= ( 
 	select top 1 Personas_Contactos.Id  from Personas_Contactos
 	where Personas_Contactos.Id_Persona=Declarante.Id 
-	and Personas_Contactos.Id_Tipo_Contacto=76 order by Personas_Contactos.Activo desc
+	and Personas_Contactos.Id_Tipo_Contacto=76 order by Personas_Contactos.Activo desc, Personas_Contactos.Id desc
 	)
 left join Personas_Contactos Barrio 
 	on   Barrio.Id= ( 
 	select top 1 Personas_Contactos.Id  from Personas_Contactos
 	where Personas_Contactos.Id_Persona=Declarante.Id 
-	and Personas_Contactos.Id_Tipo_Contacto=79 order by Personas_Contactos.Activo desc
+	and Personas_Contactos.Id_Tipo_Contacto=79 order by Personas_Contactos.Activo desc, Personas_Contactos.Id desc
 	)
 left join Personas_Contactos Direccion 
 	on   Direccion.Id= ( 
 	select top 1 Personas_Contactos.Id  from Personas_Contactos
 	where Personas_Contactos.Id_Persona=Declarante.Id 
-	and Personas_Contactos.Id_Tipo_Contacto=74 order by Personas_Contactos.Activo desc
+	and Personas_Contactos.Id_Tipo_Contacto=74 order by Personas_Contactos.Activo desc, Personas_Contactos.Id desc
 	)
 left join SubTablas TipoIdentificacion on TipoIdentificacion.Id= Personas.Id_Tipo_Identificacion
 left join SubTablas Generos on Generos.Id = Personas.Id_Genero
@@ -99,7 +99,7 @@ left join Personas_Regimen_Salud rs_antes
 	select top 1 Personas_Regimen_Salud.Id  from Personas_Regimen_Salud
 	where Personas_Regimen_Salud.Id_Persona=Personas.Id 
 	and Personas_Regimen_Salud.Id_Tipo_Entrega=54 -- antes
-	order by Personas_Regimen_Salud.Fecha desc
+	order by Personas_Regimen_Salud.Fecha desc, Personas_Regimen_Salud.Id desc
 	)
 left join SubTablas regimen_salud_antes on regimen_salud_antes.id= rs_antes.Id_Regimen_Salud
 left join SubTablas eps_antes on eps_antes.id= rs_antes.Id_Eps
@@ -111,7 +111,7 @@ left join Personas_Regimen_Salud rs_primera
 	select top 1 Personas_Regimen_Salud.Id  from Personas_Regimen_Salud
 	where Personas_Regimen_Salud.Id_Persona=Personas.Id 
 	and Personas_Regimen_Salud.Id_Tipo_Entrega=72 -- primera
-	order by Personas_Regimen_Salud.Fecha desc
+	order by Personas_Regimen_Salud.Fecha desc, Personas_Regimen_Salud.Id desc
 	)
 left join SubTablas regimen_salud_primera on regimen_salud_primera.id= rs_primera.Id_Regimen_Salud
 left join SubTablas eps_primera on eps_primera.id= rs_primera.Id_Eps
@@ -123,7 +123,7 @@ left join Personas_Regimen_Salud rs_segunda
 	select top 1 Personas_Regimen_Salud.Id  from Personas_Regimen_Salud
 	where Personas_Regimen_Salud.Id_Persona=Personas.Id 
 	and Personas_Regimen_Salud.Id_Tipo_Entrega=918 -- segunda
-	order by Personas_Regimen_Salud.Fecha desc
+	order by Personas_Regimen_Salud.Fecha desc, Personas_Regimen_Salud.Id desc
 	)
 left join SubTablas regimen_salud_segunda on regimen_salud_segunda.id= rs_segunda.Id_Regimen_Salud
 left join SubTablas eps_segunda on eps_segunda.id= rs_segunda.Id_Eps
@@ -135,7 +135,7 @@ left join Personas_Regimen_Salud rs_seguimiento
 	select top 1 Personas_Regimen_Salud.Id  from Personas_Regimen_Salud
 	where Personas_Regimen_Salud.Id_Persona=Personas.Id 
 	and Personas_Regimen_Salud.Id_Tipo_Entrega=919 -- seguimiento
-	order by Personas_Regimen_Salud.Fecha desc
+	order by Personas_Regimen_Salud.Fecha desc, Personas_Regimen_Salud.Id desc
 	)
 left join SubTablas regimen_salud_seguimiento on regimen_salud_seguimiento.id= rs_seguimiento.Id_Regimen_Salud
 left join SubTablas eps_seguimiento on eps_seguimiento.id= rs_seguimiento.Id_Eps
@@ -146,7 +146,8 @@ left join Declaracion_Unidades RUV
 	on   RUV.Id= ( 
 	select top 1 Declaracion_Unidades.Id  from Declaracion_Unidades
 	where Declaracion_Unidades.Id_Declaracion=Declaracion.Id 
-	and Declaracion_Unidades.Id_Unidad=32 order by Declaracion_Unidades.Fecha_Investigacion desc
+	and Declaracion_Unidades.Id_Unidad=32 
+	order by Declaracion_Unidades.Fecha_Investigacion desc, Declaracion_Unidades.Id desc
 	)
 left join SubTablas EstadoRUV on EstadoRUV.Id= RUV.Id_EstadoUnidad
 
@@ -154,7 +155,7 @@ left join Personas_Regimen_Salud rs_cerrar
 	on   rs_cerrar.Id= ( 
 	select top 1 Personas_Regimen_Salud.Id  from Personas_Regimen_Salud
 	where Personas_Regimen_Salud.Id_Persona=Personas.Id 
-	order by Personas_Regimen_Salud.Fecha desc
+	order by Personas_Regimen_Salud.Fecha desc, Personas_Regimen_Salud.Id desc
 	)
 left join SubTablas regimen_salud_seguimiento_mr on regimen_salud_seguimiento_mr.id= rs_cerrar.Id_Regimen_Salud
 left join SubTablas eps_seguimiento_mr on eps_seguimiento_mr.id= rs_cerrar.Id_Eps
@@ -162,7 +163,7 @@ left join SubTablas municipio_seguimiento_mr on municipio_seguimiento_mr.id= rs_
 left join SubTablas departamento_seguimiento_mr on departamento_seguimiento_mr.id= municipio_seguimiento_mr.Id_Padre
 left join SubTablas tipo_seguimiento_mr on tipo_seguimiento_mr.id= rs_cerrar.Id_Tipo_Entrega
 
-where declaracion.id_grupo <> 592   -- procesado
+where declaracion.id_grupo <> 592   -- no procesado
 and (Declaracion.Id_Regional=1637 or Declaracion.Id_Regional=4521  or Declaracion.Id_Regional=1865)
 And Declaracion.Fecha_Radicacion >= '20151001 00:00:00' --'29.09.2014 00:00:00' --'2014.09.29 00:00:00'
 And Declaracion.Fecha_Radicacion <= '20160131 23:59:59'
