@@ -19,11 +19,14 @@ set @FechaAtencionInicial='20151001'
 set @FechaAtencionFinal='20160229'
 set @FechaCorte=@FechaAtencionFinal
 
+
 select 
-ROW_NUMBER() over ( order by Declaracion.Id, Personas.tipo desc, Personas.edad desc ) as Num,
+--ROW_NUMBER() over ( order by Declaracion.Id, Personas.tipo desc, Personas.edad desc ) as Num,
 Declaracion.Id as Id_Declaracion,
 Personas.Id as Id_Persona,
-Coalesce(grupos.Descripcion,'') as Grupo, Sucursales.Nombre as Regional, Lentrega.Descripcion as Lugar_Entrega,
+Coalesce(grupos.Descripcion,'') as Grupo, 
+Sucursales.Nombre as Regional,
+Lentrega.Descripcion as Lugar_Entrega,
 dbo.ConvertirFecha(Declaracion.Fecha_Radicacion) as Fecha_Radicacion,
 dbo.ConvertirFecha(Declaracion.Fecha_Declaracion) as Fecha_Declaracion,
 dbo.ConvertirFecha(Declaracion.Fecha_Desplazamiento) as Fecha_Desplazamiento,
@@ -65,7 +68,6 @@ coalesce(MUN_PE.Descripcion,'')  as Municipio_PE,
 coalesce(Personas.Institucion_Estudia,'') as Institucion_PE,
 coalesce(apoyo.Descripcion,'')  as ApoyoEducativo,
 
-e_segunda.Id_Estudia_Actualmente as Id_Estudia_SE,
 dbo.ConvertirFecha(e_segunda.Fecha) as Fecha_SE,
 coalesce(E_SE.Descripcion,'') as Estudia_SE,
 coalesce(MNE_SE.Descripcion,'') as Motivo_NE_SE,
@@ -80,29 +82,127 @@ coalesce(E_SEG.Descripcion,'') as Estudia_SEG,
 coalesce(MNE_SEG.Descripcion,'') as Motivo_NE_SEG,
 case when e_seguimiento.Id_Motivo_NoEstudia =@id_yasegraduo then 'Si' else case when e_seguimiento.Id_Motivo_NoEstudia is null then '' else 'No' end   end as Graduado_SEG,
 coalesce(C_SEG.Descripcion,'') as Certificado_SEG,
+case when e_seguimiento.Verificado_Entidad=1 then 'Si' else case when e_seguimiento.Verificado_Entidad=0 then 'No' else '' end end  as Verificado_SEG,
+
 coalesce(G_SEG.Descripcion,'') as Grado_SEG,
 coalesce(MUN_SEG.Descripcion,'')  as Municipio_SEG,
 coalesce(e_seguimiento.Establecimiento,'') as Instituto_SEG,
 
-/*case when e_seguimiento.id is null then case when e_segunda.id is null then 'Primera' else  'Segunda' end else 'Seguimiento' end as MR, 
-dbo.ConvertirFecha(ISNULL(e_seguimiento.Fecha, ISNULL(e_segunda.Fecha, Declaracion.Fecha_Valoracion))) as Fecha_MR,
-coalesce(case when e_seguimiento.id is null then case when e_segunda.id is null then E_PE.Descripcion else E_SE.Descripcion end else E_SEG.Descripcion end, '') as Estudia_MR, 
-coalesce(case when e_seguimiento.id is null then case when e_segunda.id is null then MNE_PE.Descripcion else MNE_SE.Descripcion end else MNE_SEG.Descripcion end, '') as Motivo_NE_MR, 
-case when (case when e_seguimiento.id is null then case when e_segunda.Id is null then Personas.Id_Motivo_NoEstudio else e_segunda.Id_Motivo_NoEstudia end else e_seguimiento.Id_Motivo_NoEstudia end)=@id_yasegraduo then 'Si' else 'No'end as Graduado_MR, 
-coalesce(case when e_seguimiento.id is null then case when e_segunda.id is null then C_PE.Descripcion else C_SE.Descripcion end else C_SEG.Descripcion end, '') as Certificado_MR, 
-coalesce(case when e_seguimiento.id is null then case when e_segunda.id is null then G_PE.Descripcion else G_SE.Descripcion end else G_SEG.Descripcion end, '') as Grado_MR, 
-coalesce(case when e_seguimiento.id is null then case when e_segunda.id is null then MUN_PE.Descripcion else MUN_SE.Descripcion end else MUN_SEG.Descripcion end, '') as Municipio_MR, 
-coalesce(case when e_seguimiento.id is null then case when e_segunda.id is null then Personas.Institucion_Estudia else e_segunda.Establecimiento end else e_seguimiento.Establecimiento end, '') as Instituto_Mr
-*/
 case when e_seguimiento.id is null then case when e_segunda.id is null then 'Primera' else 'Segunda' end else case when e_segunda.Fecha> e_seguimiento.Fecha then 'Segunda' else  'Seguimiento' end end as MR, 
-case when e_seguimiento.id is null then case when e_segunda.id is null then dbo.ConvertirFecha(Declaracion.Fecha_Valoracion) else 'Segunda' end else case when e_segunda.Fecha> e_seguimiento.Fecha then dbo.ConvertirFecha(e_segunda.Fecha) else  dbo.ConvertirFecha(e_seguimiento.Fecha) end end as Fecha_MR, 
+case when e_seguimiento.id is null then case when e_segunda.id is null then dbo.ConvertirFecha(Declaracion.Fecha_Valoracion) else dbo.ConvertirFecha(e_segunda.Fecha) end else case when e_segunda.Fecha> e_seguimiento.Fecha then dbo.ConvertirFecha(e_segunda.Fecha) else  dbo.ConvertirFecha(e_seguimiento.Fecha) end end as Fecha_MR, 
 coalesce(case when e_seguimiento.id is null then case when e_segunda.id is null then E_PE.Descripcion else E_SE.Descripcion end else case when e_segunda.Fecha> e_seguimiento.Fecha then E_SE.Descripcion else  E_SEG.Descripcion end end, '') as Estudia_MR, 
 coalesce(case when e_seguimiento.id is null then case when e_segunda.id is null then MNE_PE.Descripcion else MNE_SE.Descripcion end else case when e_segunda.Fecha> e_seguimiento.Fecha then MNE_SE.Descripcion else  MNE_SEG.Descripcion end end, '') as Motivo_NE_MR, 
 case when (case when e_seguimiento.id is null then case when e_segunda.Id is null then Personas.Id_Motivo_NoEstudio else e_segunda.Id_Motivo_NoEstudia end else case when e_segunda.Fecha> e_seguimiento.Fecha then e_segunda.Id_Motivo_NoEstudia else e_seguimiento.Id_Motivo_NoEstudia end end)=@id_yasegraduo then 'Si' else 'No'end as Graduado_MR,
-coalesce(case when e_seguimiento.id is null then case when e_segunda.id is null then C_PE.Descripcion else C_SE.Descripcion end else case when e_segunda.Fecha> e_seguimiento.Fecha then C_SE.Descripcion else C_SEG.Descripcion end end, '') as Certificado_MR, 
+coalesce(case when e_seguimiento.id is null then case when e_segunda.id is null then C_PE.Descripcion else C_SE.Descripcion end else case when e_segunda.Fecha> e_seguimiento.Fecha then C_SE.Descripcion else case when C_SEG.Descripcion='Si' then 'Si' else case when e_seguimiento.Verificado_Entidad=1 then 'Si' else 'No' end  end end end, '') as CertVer_MR, 
 coalesce(case when e_seguimiento.id is null then case when e_segunda.id is null then G_PE.Descripcion else G_SE.Descripcion end else case when e_segunda.Fecha> e_seguimiento.Fecha then G_SE.Descripcion else G_SEG.Descripcion end end, '') as Grado_MR, 
 coalesce(case when e_seguimiento.id is null then case when e_segunda.id is null then MUN_PE.Descripcion else MUN_SE.Descripcion end else case when e_segunda.Fecha> e_seguimiento.Fecha then MUN_SE.Descripcion else MUN_SEG.Descripcion end end, '') as Municipio_MR, 
-coalesce(case when e_seguimiento.id is null then case when e_segunda.id is null then Personas.Institucion_Estudia else e_segunda.Establecimiento end else case when e_segunda.Fecha> e_seguimiento.Fecha then e_segunda.Establecimiento else e_seguimiento.Establecimiento end end, '') as Instituto_Mr
+coalesce(case when e_seguimiento.id is null then case when e_segunda.id is null then Personas.Institucion_Estudia else e_segunda.Establecimiento end else case when e_segunda.Fecha> e_seguimiento.Fecha then e_segunda.Establecimiento else e_seguimiento.Establecimiento end end, '') as Instituto_Mr,
+
+case when E_PE.Descripcion='Si' then 1 else 0 end as Estudia_PEntrega,
+case when Personas.Id_Motivo_NoEstudio=@id_yasegraduo then 1 else 0 end as Graduado_PEntrega,
+case when not (E_PE.Descripcion='Si') and not(isnull(Personas.Id_Motivo_NoEstudio,0)=@id_yasegraduo)  then 1 else 0 end as NoEstudia_PEntrega,
+case when E_PE.Descripcion='Si' and C_PE.Descripcion='Si'  then 1 else 0 end as EstudiaConCert_PEntrega,
+case when E_PE.Descripcion='Si' and not(C_PE.Descripcion='Si')  then 1 else 0 end as EstudiaSinCert_PEntrega,
+-- '--' as NE_PEntrega,
+case when  
+not(E_PE.Descripcion='Si') and not(isnull(Personas.Id_Motivo_NoEstudio,0)=@id_yasegraduo) 
+and 
+(
+ (E_SE.Descripcion='Si' and C_SE.Descripcion='Si' and MUN_SE.Descripcion=Lentrega.Descripcion)
+ or
+ (E_SEG.Descripcion='Si' and (C_SEG.Descripcion='Si' or e_seguimiento.Verificado_Entidad=1) and MUN_SEG.Descripcion=Lentrega.Descripcion)
+)
+then 1 else 0 end as NoEsPE_EsConCertMMun_Seguimiento,
+case when  
+not(E_PE.Descripcion='Si') and not(isnull(Personas.Id_Motivo_NoEstudio,0)=@id_yasegraduo) 
+and 
+(
+ (E_SE.Descripcion='Si' and C_SE.Descripcion='Si' and not MUN_SE.Descripcion=Lentrega.Descripcion)
+ or
+ (E_SEG.Descripcion='Si' and (C_SEG.Descripcion='Si' or e_seguimiento.Verificado_Entidad=1) and not MUN_SEG.Descripcion=Lentrega.Descripcion)
+)
+then 1 else 0 end as NoEsPE_EsConCertOMun_Seguimiento,
+-- '--' as E_PEntrega,	
+case when  
+E_PE.Descripcion='Si' and not(C_PE.Descripcion='Si')
+and 
+(
+ (E_SE.Descripcion='Si' and C_SE.Descripcion='Si' and  MUN_SE.Descripcion=Lentrega.Descripcion)
+ or
+ (E_SEG.Descripcion='Si' and (C_SEG.Descripcion='Si' or e_seguimiento.Verificado_Entidad=1) and MUN_SEG.Descripcion=Lentrega.Descripcion)
+)
+then 1 else 0 end as EsSinCertPE_EsConCertMMun_Seguimiento,
+case when  
+E_PE.Descripcion='Si' and not(C_PE.Descripcion='Si')
+and 
+(
+ (E_SE.Descripcion='Si' and C_SE.Descripcion='Si' and not MUN_SE.Descripcion=Lentrega.Descripcion)
+ or
+ (E_SEG.Descripcion='Si' and (C_SEG.Descripcion='Si' or e_seguimiento.Verificado_Entidad=1) and not MUN_SEG.Descripcion=Lentrega.Descripcion)
+)
+then 1 else 0 end as EsSinCertPE_EsConCertOMun_Seguimiento,
+
+case when not (isnull(Personas.Id_Motivo_NoEstudio,0)=@id_yasegraduo) 
+and 
+(
+e_segunda.Id_Motivo_NoEstudia =@id_yasegraduo or e_seguimiento.Id_Motivo_NoEstudia =@id_yasegraduo
+)
+then 1 else 0 end as Graduado_Seguimiento,
+case when 
+Personas.Id_Motivo_NoEstudio=@id_yasegraduo  -- G_PE
+or
+(
+E_PE.Descripcion='Si' and C_PE.Descripcion='Si'
+) -- EConCert_PE
+or
+(
+not(E_PE.Descripcion='Si') and not(Personas.Id_Motivo_NoEstudio=@id_yasegraduo) 
+and 
+(
+ (E_SE.Descripcion='Si' and C_SE.Descripcion='Si' and MUN_SE.Descripcion=Lentrega.Descripcion)
+ or
+ (E_SEG.Descripcion='Si' and (C_SEG.Descripcion='Si' or e_seguimiento.Verificado_Entidad=1) and MUN_SEG.Descripcion=Lentrega.Descripcion)
+)
+)
+or
+(
+not(E_PE.Descripcion='Si') and not(Personas.Id_Motivo_NoEstudio=@id_yasegraduo) 
+and 
+(
+ (E_SE.Descripcion='Si' and C_SE.Descripcion='Si' and not MUN_SE.Descripcion=Lentrega.Descripcion)
+ or
+ (E_SEG.Descripcion='Si' and (C_SEG.Descripcion='Si' or e_seguimiento.Verificado_Entidad=1) and not MUN_SEG.Descripcion=Lentrega.Descripcion)
+)
+)
+or
+(
+E_PE.Descripcion='Si' and not(C_PE.Descripcion='Si')
+and 
+(
+ (E_SE.Descripcion='Si' and C_SE.Descripcion='Si' and  MUN_SE.Descripcion=Lentrega.Descripcion)
+ or
+ (E_SEG.Descripcion='Si' and (C_SEG.Descripcion='Si' or e_seguimiento.Verificado_Entidad=1) and MUN_SEG.Descripcion=Lentrega.Descripcion)
+)
+)
+or
+(
+E_PE.Descripcion='Si' and not(C_PE.Descripcion='Si')
+and 
+(
+ (E_SE.Descripcion='Si' and C_SE.Descripcion='Si' and not MUN_SE.Descripcion=Lentrega.Descripcion)
+ or
+ (E_SEG.Descripcion='Si' and (C_SEG.Descripcion='Si' or e_seguimiento.Verificado_Entidad=1) and not MUN_SEG.Descripcion=Lentrega.Descripcion)
+)
+)
+or
+(
+not (isnull(Personas.Id_Motivo_NoEstudio,0)=@id_yasegraduo) 
+and 
+(
+e_segunda.Id_Motivo_NoEstudia =@id_yasegraduo or e_seguimiento.Id_Motivo_NoEstudia =@id_yasegraduo
+)
+)
+then 1 else 0 end as Estudia_AlFinalizarPeriodo
 
 
 from 
@@ -149,7 +249,7 @@ left join Declaracion_Unidades RUV
 	Declaracion_Unidades
 	where
 	Declaracion_Unidades.Id_Declaracion=Declaracion.Id and 
-	Declaracion_Unidades.Fecha_Investigacion<= isnull(@FechaCorte, (CONVERT(VARCHAR(10),GETDATE(),103)))
+	Declaracion_Unidades.Fecha_Investigacion<= isnull(@FechaAtencionFinal, (CONVERT(VARCHAR(10),GETDATE(),103)))
 	and Declaracion_Unidades.Id_Unidad=@ruv  
 	order by 
 	Declaracion_Unidades.Fecha_Investigacion desc, Declaracion_Unidades.Id desc
@@ -166,7 +266,7 @@ left join Personas_Educacion e_segunda
 	where
 	Personas_Educacion.Id_Persona= Personas.Id and
 	Personas_Educacion.Id_Tipo_Entrega= @id_segunda and
-	Personas_Educacion.Fecha<=isnull(@FechaCorte,CONVERT(VARCHAR(10),GETDATE(),103))
+	Personas_Educacion.Fecha<=isnull(@FechaAtencionFinal,CONVERT(VARCHAR(10),GETDATE(),103))
 	order by 
 	Personas_Educacion.Fecha desc, 
 	Personas_Educacion.Id desc
@@ -181,7 +281,7 @@ left join Personas_Educacion e_seguimiento
 	where
 	Personas_Educacion.Id_Persona= Personas.Id and
 	Personas_Educacion.Id_Tipo_Entrega= @id_seguimiento and
-	Personas_Educacion.Fecha<=isnull(@FechaCorte,CONVERT(VARCHAR(10),GETDATE(),103))
+	Personas_Educacion.Fecha<=isnull(@FechaAtencionFinal,CONVERT(VARCHAR(10),GETDATE(),103))
 	order by 
 	Personas_Educacion.Fecha desc, 
 	Personas_Educacion.Id desc
@@ -218,6 +318,9 @@ and Declaracion.Tipo_Declaracion=@desplazado  --desplazado
 and Declaracion.Id= Personas.Id_Declaracion
 and Personas.Edad>=@edad_desde
 and Personas.Edad<=@edad_hasta
---and ( Personas.Id_Motivo_NoEstudio =@id_yasegraduo or e_segunda.Id_Motivo_NoEstudia =@id_yasegraduo or e_seguimiento.Id_Motivo_NoEstudia=@id_yasegraduo)
+
+--and Personas.Identificacion in ('98030850599','98101456765')
+and ( not (isnull(Personas.Id_Motivo_NoEstudio,0) =@id_yasegraduo) and ( e_segunda.Id_Motivo_NoEstudia =@id_yasegraduo or e_seguimiento.Id_Motivo_NoEstudia=@id_yasegraduo) )
 Order by Declaracion.Id, Personas.tipo desc, Personas.edad desc
 
+-- 98101456765   98030850599 karen 

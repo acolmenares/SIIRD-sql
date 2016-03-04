@@ -77,19 +77,22 @@ left join Personas_Contactos Celular
 	on   Celular.Id= ( 
 	select top 1 Personas_Contactos.Id  from Personas_Contactos
 	where Personas_Contactos.Id_Persona=Declarante.Id 
-	and Personas_Contactos.Id_Tipo_Contacto=76 order by Personas_Contactos.Activo desc, Personas_Contactos.Id desc
+	and Personas_Contactos.Id_Tipo_Contacto=76 
+	order by Personas_Contactos.Activo desc, Personas_Contactos.Id desc
 	)
 left join Personas_Contactos Barrio 
 	on   Barrio.Id= ( 
 	select top 1 Personas_Contactos.Id  from Personas_Contactos
 	where Personas_Contactos.Id_Persona=Declarante.Id 
-	and Personas_Contactos.Id_Tipo_Contacto=79 order by Personas_Contactos.Activo desc, Personas_Contactos.Id desc
+	and Personas_Contactos.Id_Tipo_Contacto=79 
+	order by Personas_Contactos.Activo desc, Personas_Contactos.Id desc
 	)
 left join Personas_Contactos Direccion 
 	on   Direccion.Id= ( 
 	select top 1 Personas_Contactos.Id  from Personas_Contactos
 	where Personas_Contactos.Id_Persona=Declarante.Id 
-	and Personas_Contactos.Id_Tipo_Contacto=74 order by Personas_Contactos.Activo desc, Personas_Contactos.Id desc
+	and Personas_Contactos.Id_Tipo_Contacto=74 
+	order by Personas_Contactos.Activo desc, Personas_Contactos.Id desc
 	)
 left join SubTablas TipoIdentificacion on TipoIdentificacion.Id= Personas.Id_Tipo_Identificacion
 left join SubTablas Generos on Generos.Id = Personas.Id_Genero
@@ -164,25 +167,13 @@ left join SubTablas departamento_seguimiento_mr on departamento_seguimiento_mr.i
 left join SubTablas tipo_seguimiento_mr on tipo_seguimiento_mr.id= rs_cerrar.Id_Tipo_Entrega
 
 where declaracion.id_grupo <> 592   -- no procesado
-and (Declaracion.Id_Regional=1637 or Declaracion.Id_Regional=4521  or Declaracion.Id_Regional=1865)
-And Declaracion.Fecha_Radicacion >= '20151001 00:00:00' --'29.09.2014 00:00:00' --'2014.09.29 00:00:00'
-And Declaracion.Fecha_Radicacion <= '20160131 23:59:59'
+and (Declaracion.Id_Regional=1637 or Declaracion.Id_Regional=4521 ) --or Declaracion.Id_Regional=1865)
+--And Declaracion.Fecha_Radicacio >= '20151001 00:00:00' 
+--And Declaracion.Fecha_Radicacion <= '20160131 23:59:59'
+And Declaracion.Fecha_Valoracion >= '20151001 00:00:00' 
+And Declaracion.Fecha_Valoracion <= '20160229 23:59:59'
 and Declaracion.Tipo_Declaracion='921'  --desplazado
 Order by personas.id_declaracion, Personas.tipo desc, Personas.edad desc
 
 --and (rs_cerrar.Id_Cerrar!=19 or rs_cerrar.Id_Eps is null or rs_cerrar.Id_Eps=635)
 
-/*
-and personas.Id not in ( select Pers.id_persona
-  from Personas_regimen_salud pers where pers.Id_Tipo_Entrega = 72  -- Difrente Sin Acceso y Primera Entrega
-   and pers.Id_regimen_Salud <> 173 and pers.id_persona = personas.Id)  
-and personas.Id not in ( select Pers.id_persona
-  from Personas_regimen_salud pers where pers.Id_Tipo_Entrega = 919   -- Difrente Sin Acceso y Seguimiento
-   and pers.Id_regimen_Salud <> 173 and pers.id_persona = personas.Id)  
-and personas.Id not in ( select Pers.id_persona
-  from Personas_regimen_salud pers where pers.Id_Tipo_Entrega = 918
-   and pers.Id_regimen_Salud <> 173 and pers.id_persona = personas.Id)  -- Difrente Sin Acceso y Segunda Entrega
-and personas.Id not in ( select Pers.id_persona
-  from Personas_regimen_salud pers where pers.Id_Cerrar = 19   -- Cerrar SI
-    and pers.id_persona = personas.Id) 
-	*/

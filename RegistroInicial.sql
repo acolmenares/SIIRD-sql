@@ -55,7 +55,10 @@ dbo.ConvertirFecha(AA.Fecha_Investigacion) as Fecha_Investigacion_AA,
 --
 coalesce(EstadoNotificacion.Descripcion,'') as Estado_Notificacion,
 dbo.ConvertirFecha(Notificacion.Fecha_Inclusion) as Fecha_Notificacion,
-dbo.ConvertirFecha(Notificacion.Fecha_Investigacion) as Fecha_Investigacion_Notificacion
+dbo.ConvertirFecha(Notificacion.Fecha_Investigacion) as Fecha_Investigacion_Notificacion,
+PerCount.TotalFamilia,
+PerCount.Ninos05,
+PerCount.Ninos617
 
 FROM         Declaracion 
 INNER JOIN Personas ON Declaracion.Id = Personas.Id_Declaracion
@@ -69,19 +72,22 @@ left join Personas_Contactos Celular
 	on   Celular.Id= ( 
 	select top 1 Personas_Contactos.Id  from Personas_Contactos
 	where Personas_Contactos.Id_Persona=Personas.Id 
-	and Personas_Contactos.Id_Tipo_Contacto=76 order by Personas_Contactos.Activo desc
+	and Personas_Contactos.Id_Tipo_Contacto=76 
+	order by Personas_Contactos.Activo desc, Personas_Contactos.Id desc
 	)
 left join Personas_Contactos Barrio 
 	on   Barrio.Id= ( 
 	select top 1 Personas_Contactos.Id  from Personas_Contactos
 	where Personas_Contactos.Id_Persona=Personas.Id 
-	and Personas_Contactos.Id_Tipo_Contacto=79 order by Personas_Contactos.Activo desc
+	and Personas_Contactos.Id_Tipo_Contacto=79 
+	order by Personas_Contactos.Activo desc, Personas_Contactos.Id desc
 	)
 left join Personas_Contactos Direccion 
 	on   Direccion.Id= ( 
 	select top 1 Personas_Contactos.Id  from Personas_Contactos
 	where Personas_Contactos.Id_Persona=Personas.Id 
-	and Personas_Contactos.Id_Tipo_Contacto=74 order by Personas_Contactos.Activo desc
+	and Personas_Contactos.Id_Tipo_Contacto=74 
+	order by Personas_Contactos.Activo desc, Personas_Contactos.Id desc
 	)
 left join SubTablas Generos on Generos.Id = Personas.Id_Genero
 left join SubTablas Atendidos on Atendidos.Id=Declaracion.Id_Atender
@@ -90,7 +96,8 @@ left join Declaracion_Unidades VUR
 	on   VUR.Id= ( 
 	select top 1 Declaracion_Unidades.Id  from Declaracion_Unidades
 	where Declaracion_Unidades.Id_Declaracion=Declaracion.Id 
-	and Declaracion_Unidades.Id_Unidad=32 order by Declaracion_Unidades.Fecha_Investigacion, Declaracion_Unidades.Id desc
+	and Declaracion_Unidades.Id_Unidad=32 
+	order by Declaracion_Unidades.Fecha_Investigacion desc, Declaracion_Unidades.Id desc
 	)
 left join SubTablas EstadoVUR on EstadoVUR.Id= VUR.Id_EstadoUnidad
 --
@@ -98,7 +105,8 @@ left join Declaracion_Unidades PAARI
 	on   PAARI.Id= ( 
 	select top 1 Declaracion_Unidades.Id  from Declaracion_Unidades
 	where Declaracion_Unidades.Id_Declaracion=Declaracion.Id 
-	and Declaracion_Unidades.Id_Unidad=274 order by Declaracion_Unidades.Fecha_Investigacion, Declaracion_Unidades.Id desc
+	and Declaracion_Unidades.Id_Unidad=274 
+	order by Declaracion_Unidades.Fecha_Investigacion desc, Declaracion_Unidades.Id desc
 	)
 left join SubTablas EstadoPAARI on EstadoPAARI.Id= PAARI.Id_EstadoUnidad
 --
@@ -107,7 +115,8 @@ left join Declaracion_Unidades FA
 	on   FA.Id= ( 
 	select top 1 Declaracion_Unidades.Id  from Declaracion_Unidades
 	where Declaracion_Unidades.Id_Declaracion=Declaracion.Id 
-	and Declaracion_Unidades.Id_Unidad=273 order by Declaracion_Unidades.Fecha_Investigacion, Declaracion_Unidades.Id desc
+	and Declaracion_Unidades.Id_Unidad=273 
+	order by Declaracion_Unidades.Fecha_Investigacion desc, Declaracion_Unidades.Id desc
 	)
 left join SubTablas EstadoFA on EstadoFA.Id= FA.Id_EstadoUnidad
 --
@@ -117,10 +126,10 @@ left join Declaracion_Unidades AA
 	on   AA.Id= ( 
 	select top 1 Declaracion_Unidades.Id  from Declaracion_Unidades
 	where Declaracion_Unidades.Id_Declaracion=Declaracion.Id 
-	and Declaracion_Unidades.Id_Unidad=161 order by Declaracion_Unidades.Fecha_Investigacion, Declaracion_Unidades.Id desc
+	and Declaracion_Unidades.Id_Unidad=161 
+	order by Declaracion_Unidades.Fecha_Investigacion desc, Declaracion_Unidades.Id desc
 	)
 left join SubTablas EstadoAA on EstadoAA.Id= AA.Id_EstadoUnidad
---
 --
 --
 --
@@ -128,18 +137,26 @@ left join Declaracion_Unidades Notificacion
 	on   Notificacion.Id= ( 
 	select top 1 Declaracion_Unidades.Id  from Declaracion_Unidades
 	where Declaracion_Unidades.Id_Declaracion=Declaracion.Id 
-	and Declaracion_Unidades.Id_Unidad=1501 order by Declaracion_Unidades.Fecha_Investigacion, Declaracion_Unidades.Id desc
+	and Declaracion_Unidades.Id_Unidad=1501 
+	order by Declaracion_Unidades.Fecha_Investigacion desc, Declaracion_Unidades.Id desc
 	)
-left join SubTablas EstadoNotificacion on EstadoNotificacion.Id= Notificacion.Id_EstadoUnidad
+left join SubTablas EstadoNotificacion on EstadoNotificacion.Id= Notificacion.Id_EstadoUnidad,
+(
+  
+  select per.Id_Declaracion, count(per.Id)  as TotalFamilia,
+   sum( case when (per.Edad>=0 and per.Edad<=5) then 1 else 0 end) as Ninos05,
+   sum( case when (per.Edad>=6 and per.Edad<=17) then 1 else 0 end) as Ninos617
+  from Personas per group by per.Id_Declaracion
+) as PerCount 
 
 
 WHERE     
 (Personas.Tipo = 'D')  -- declarante
-And Declaracion.Fecha_Valoracion>='20141001 00:00:00'
-And Declaracion.Fecha_Valoracion<='20160131 00:00:00'
+--And Declaracion.Fecha_Valoracion>='20141001 00:00:00'
+--And Declaracion.Fecha_Valoracion<='20160131 00:00:00'
 
---And Declaracion.Fecha_Radicacion >= '20140701 00:00:00' --'29.09.2014 00:00:00' --'2014.09.29 00:00:00'
---And Declaracion.Fecha_Radicacion <= '20160131 23:59:59'
+And Declaracion.Fecha_Radicacion >= '20151001 00:00:00' --'29.09.2014 00:00:00' --'2014.09.29 00:00:00'
+And Declaracion.Fecha_Radicacion <= '20160229 23:59:59'
 and (
 	Declaracion.Id_Regional=1637  -- florencia
 	or Declaracion.Id_Regional=4521  -- popayan
@@ -147,6 +164,7 @@ and (
 	) 
 and Declaracion.Tipo_Declaracion='921' -- desplazado
 --and EstadoPAARI.Descripcion is null
+and PerCount.Id_Declaracion= Declaracion.Id
 order by Declaracion.Id
 
 
