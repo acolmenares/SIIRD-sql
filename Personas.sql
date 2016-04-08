@@ -180,5 +180,5 @@ left join SubTablas EstadoNotificacion on EstadoNotificacion.Id= Notificacion.Id
 WHERE PerCount.Id_Declaracion= Declaracion.Id
 And Declaracion.Tipo_Declaracion='921' -- desplazado 
 And Declaracion.Fecha_Valoracion>='20151001 00:00:00'
-And Declaracion.Fecha_Valoracion<='20160229 00:00:00'
+And Declaracion.Fecha_Valoracion<='20160331 00:00:00'
 Order by personas.id_declaracion, tipo desc, edad desc 

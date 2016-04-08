@@ -2,7 +2,7 @@ use IRDCOL
 
 declare @Id_Regional int =null
 declare @FechaAtencionInicial date = '20151001'
-declare @FechaAtencionFinal date = '20160229'
+declare @FechaAtencionFinal date = '20160331'
 declare @ruv int = 32
 declare @id_segunda int =918
 declare @id_seguimiento int = 919

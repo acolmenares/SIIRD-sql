@@ -16,7 +16,7 @@ set @id_segunda=918
 set  @id_seguimiento=919
 set @Id_Regional=null
 set @FechaAtencionInicial='20151001'
-set @FechaAtencionFinal='20160229'
+set @FechaAtencionFinal='20160331'
 set @FechaCorte=@FechaAtencionFinal
 
 
@@ -320,7 +320,7 @@ and Personas.Edad>=@edad_desde
 and Personas.Edad<=@edad_hasta
 
 --and Personas.Identificacion in ('98030850599','98101456765')
-and ( not (isnull(Personas.Id_Motivo_NoEstudio,0) =@id_yasegraduo) and ( e_segunda.Id_Motivo_NoEstudia =@id_yasegraduo or e_seguimiento.Id_Motivo_NoEstudia=@id_yasegraduo) )
+-- and ( not (isnull(Personas.Id_Motivo_NoEstudio,0) =@id_yasegraduo) and ( e_segunda.Id_Motivo_NoEstudia =@id_yasegraduo or e_seguimiento.Id_Motivo_NoEstudia=@id_yasegraduo) )
 Order by Declaracion.Id, Personas.tipo desc, Personas.edad desc
 
 -- 98101456765   98030850599 karen 
