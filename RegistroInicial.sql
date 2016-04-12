@@ -21,7 +21,7 @@ Personas.Identificacion,
 Personas.Tipo,
 Coalesce( Celular.Descripcion,'') as Celular,
 Coalesce(Direccion.Descripcion,'') as Direccion,
---Coalesce(Barrio.Descripcion,'') as Barrio,
+Coalesce(Barrio.Descripcion,'') as Barrio,
 Coalesce(Personas.Edad,'') as Edad,
 dbo.ConvertirFecha(Personas.Fecha_Nacimiento) as Fecha_Nacimiento,
 Coalesce(Generos.Descripcion ,'') as Genero,
@@ -155,7 +155,7 @@ WHERE
 --And Declaracion.Fecha_Valoracion>='20141001 00:00:00'
 --And Declaracion.Fecha_Valoracion<='20160131 00:00:00'
 
-And Declaracion.Fecha_Radicacion >= '20151001 00:00:00' --'29.09.2014 00:00:00' --'2014.09.29 00:00:00'
+And Declaracion.Fecha_Radicacion >= '20141001 00:00:00' --'29.09.2014 00:00:00' --'2014.09.29 00:00:00'
 And Declaracion.Fecha_Radicacion <= '20160331 23:59:59'
 and (
 	Declaracion.Id_Regional=1637  -- florencia
