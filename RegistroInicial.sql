@@ -61,7 +61,7 @@ PerCount.Ninos05,
 PerCount.Ninos617
 
 FROM         Declaracion 
-INNER JOIN Personas ON Declaracion.Id = Personas.Id_Declaracion
+JOIN Personas ON Declaracion.Id = Personas.Id_Declaracion
 left join Sucursales on Sucursales.Id_Enlace=  Declaracion.Id_Regional
 left join SubTablas Grupos on Grupos.Id=Declaracion.Id_Grupo
 left join SubTablas Fuentes on Fuentes.Id=Declaracion.Id_Fuente
@@ -152,11 +152,11 @@ left join SubTablas EstadoNotificacion on EstadoNotificacion.Id= Notificacion.Id
 
 WHERE     
 (Personas.Tipo = 'D')  -- declarante
---And Declaracion.Fecha_Valoracion>='20141001 00:00:00'
+--And Declaracion.Fecha_Valoracion>='20151001 00:00:00'
 --And Declaracion.Fecha_Valoracion<='20160131 00:00:00'
 
-And Declaracion.Fecha_Radicacion >= '20141001 00:00:00' --'29.09.2014 00:00:00' --'2014.09.29 00:00:00'
-And Declaracion.Fecha_Radicacion <= '20160331 23:59:59'
+And Declaracion.Fecha_Radicacion >= '20151001 00:00:00' --'29.09.2014 00:00:00' --'2014.09.29 00:00:00'
+And Declaracion.Fecha_Radicacion <= '20160430 23:59:59'
 and (
 	Declaracion.Id_Regional=1637  -- florencia
 	or Declaracion.Id_Regional=4521  -- popayan

@@ -74,7 +74,7 @@ left join Sucursales on Sucursales.Id_Enlace=  Declaracion.Id_Regional
 left join SubTablas Grupos on Grupos.Id=Declaracion.Id_Grupo
 left join SubTablas Fuentes on Fuentes.Id=Declaracion.Id_Fuente
 left join SubTablas LFuentes on LFuentes.Id= Declaracion.Id_lugar_fuente
-left JOIN Personas ON Declaracion.Id = Personas.Id_Declaracion
+JOIN Personas ON Declaracion.Id = Personas.Id_Declaracion
 left join SubTablas TipoIdentificacion on TipoIdentificacion.Id= Personas.Id_Tipo_Identificacion
 left join SubTablas Generos on Generos.Id = Personas.Id_Genero
 left join SubTablas Parentescos on Parentescos.Id= Personas.Id_Parentesco
@@ -179,8 +179,8 @@ left join SubTablas EstadoNotificacion on EstadoNotificacion.Id= Notificacion.Id
 ) as PerCount 
 WHERE PerCount.Id_Declaracion= Declaracion.Id
 And Declaracion.Tipo_Declaracion='921' -- desplazado 
-And Declaracion.Fecha_Valoracion>='20141001 00:00:00'  -- para discapacitados prm vii y prm viii
-And Declaracion.Fecha_Valoracion<='20160331 00:00:00'  -- para discapacitados prm vii y prm viii
+And Declaracion.Fecha_Valoracion>='20151001 00:00:00'  -- para discapacitados prm vii y prm viii
+And Declaracion.Fecha_Valoracion<='20160430 00:00:00'  -- para discapacitados prm vii y prm viii
 --and Discapacitados.Descripcion='Si' -- para discapacitados prm vii y prm viii
 Order by personas.id_declaracion, tipo desc, edad desc 
 

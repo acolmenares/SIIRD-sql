@@ -11,12 +11,13 @@ declare @id_atender_si int = 19
 declare @edad_desde int= 6
 declare @edad_hasta int= 17
 declare @id_yasegraduo int = 1693
+declare @id_muerto int = 280
 set @ruv=32
 set @id_segunda=918
 set  @id_seguimiento=919
 set @Id_Regional=null
 set @FechaAtencionInicial='20151001'
-set @FechaAtencionFinal='20160331'
+set @FechaAtencionFinal='20160430'
 set @FechaCorte=@FechaAtencionFinal
 
 select 
@@ -248,5 +249,8 @@ and Declaracion.Tipo_Declaracion=@desplazado  --desplazado
 and Declaracion.Id= Personas.Id_Declaracion
 and Personas.Edad>=@edad_desde
 and Personas.Edad<=@edad_hasta
+--and Personas.Id_Motivo_NoEstudio<>@id_muerto
 ) p
 ) q
+
+where q.Motivo_NE_PE<>'Muerto'

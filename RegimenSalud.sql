@@ -171,7 +171,7 @@ and (Declaracion.Id_Regional=1637 or Declaracion.Id_Regional=4521 ) --or Declara
 --And Declaracion.Fecha_Radicacio >= '20151001 00:00:00' 
 --And Declaracion.Fecha_Radicacion <= '20160131 23:59:59'
 And Declaracion.Fecha_Valoracion >= '20151001 00:00:00' 
-And Declaracion.Fecha_Valoracion <= '20160331 23:59:59'
+And Declaracion.Fecha_Valoracion <= '20160430 23:59:59'
 and Declaracion.Tipo_Declaracion='921'  --desplazado
 Order by personas.id_declaracion, Personas.tipo desc, Personas.edad desc
 
