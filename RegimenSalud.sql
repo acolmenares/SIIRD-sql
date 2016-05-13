@@ -1,10 +1,14 @@
 USE [IRDCOL]
 
+
+/* Estado_SGSSS_PE ojo "Vinculado" es el mismo tratamiento de "Sin Acceso"  */
+
 SELECT
  ROW_NUMBER() over ( order by Declaracion.Id, Personas.tipo desc, Personas.edad desc ) as Num,
  Personas.Id, 
  Declaracion.Id as Declaracion,
  Sucursales.Nombre as Regional,
+ Lentrega.Descripcion as MunicipioAtencion,
 Coalesce(grupos.Descripcion,'') as Grupo,
 Fuentes.Descripcion as Fuente,
 LFuentes.Descripcion as Lugar_Fuente,
@@ -34,10 +38,11 @@ Coalesce(eps_antes.Descripcion, '') as EPS_Antes,
 Coalesce(municipio_antes.Descripcion, '') as Municipio_Antes,
 Coalesce(departamento_antes.Descripcion, '') as Dpto_Antes,
 
-Coalesce(regimen_salud_primera.Descripcion, '') as RS_Primera,
-Coalesce(eps_primera.Descripcion, '') as EPS_Primera,
-Coalesce(municipio_primera.Descripcion, '') as Municipio_Primera,
-Coalesce(departamento_primera.Descripcion, '') as Dpto_Primera,
+Coalesce(regimen_salud_primera.Descripcion, '') as RS_PE,
+'SioNO Dependiendo del Regimen' as Afiliado_SGSSS_PE,
+Coalesce(eps_primera.Descripcion, '') as EPS_PE,
+Coalesce(municipio_primera.Descripcion, '') as Municipio_PE,
+Coalesce(departamento_primera.Descripcion, '') as Depto_PE,
 
 dbo.ConvertirFecha(rs_segunda.Fecha) as Fecha_Segunda,
 Coalesce(regimen_salud_segunda.Descripcion, '') as RS_Segunda,
@@ -56,22 +61,24 @@ dbo.ConvertirFecha(RUV.Fecha_Inclusion) as Fecha_Valoracion_RUV,
 dbo.ConvertirFecha(RUV.Fecha_Investigacion) as Fecha_Investigacion_RUV,
 
 case rs_cerrar.Id_Cerrar when 19 then case  when (rs_cerrar.Id_Eps is null or rs_cerrar.Id_Eps= 635) then 'NO' else 'SI' end else 'NO' end as Cerrado,
-dbo.ConvertirFecha(rs_cerrar.Fecha) as Fecha_Seguimiento_MR,
-Coalesce(regimen_salud_seguimiento_mr.Descripcion, '') as RS_Seguimiento_MR,
-Coalesce(eps_seguimiento_mr.Descripcion, '') as EPS_Seguimiento_MR,
-Coalesce(municipio_seguimiento_mr.Descripcion, '') as Municipio_Seguimiento_MR,
-Coalesce(Departamento_seguimiento_mr.Descripcion, '') as Dpto_Seguimiento_MR,
-Coalesce(tipo_seguimiento_mr.Descripcion, '') as Tipo_Seguimiento_MR
+dbo.ConvertirFecha(rs_cerrar.Fecha) as Fecha_Final,
+Coalesce(regimen_salud_seguimiento_mr.Descripcion, '') as RS_Final,
+Coalesce(eps_seguimiento_mr.Descripcion, '') as EPS_Final,
+Coalesce(municipio_seguimiento_mr.Descripcion, '') as Municipio_Final,
+Coalesce(Departamento_seguimiento_mr.Descripcion, '') as Dpto_Final,
+Coalesce(tipo_seguimiento_mr.Descripcion, '') as TipoSeguimiento_Final,
+'SioNO Dependiendo del Regimen' as Afiliado_SGSSS_Final -- Subsidio o Contributio == si , lo demas No ojo
 
 
 FROM Declaracion
-LEFT OUTER JOIN Personas ON Declaracion.Id = Personas.Id_Declaracion
+JOIN Personas ON Declaracion.Id = Personas.Id_Declaracion
 left join Personas Declarante on Declarante.Id_Declaracion= Personas.Id_Declaracion and Declarante.Tipo='D'
 
 left join Sucursales on Sucursales.Id_Enlace=  Declaracion.Id_Regional
-left join SubTablas Grupos on Grupos.Id=Declaracion.Id_Grupo
 left join SubTablas Fuentes on Fuentes.Id=Declaracion.Id_Fuente
 left join SubTablas LFuentes on LFuentes.Id= Declaracion.Id_lugar_fuente
+left join SubTablas Grupos on Grupos.Id=Declaracion.Id_Grupo
+left JOIN Subtablas Lentrega ON Grupos.Id_padre = Lentrega.Id
 
 left join Personas_Contactos Celular 
 	on   Celular.Id= ( 
