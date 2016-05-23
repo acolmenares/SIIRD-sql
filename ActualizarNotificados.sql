@@ -34,7 +34,8 @@ DECLARE Cur CURSOR FOR
 	ua.Id, ua.Numero_Declaracion, ua.Identificacion, ua.Fecha_Notificacion, 
 	ua.Orfeo_AA, ua.Fecha_AA
 	from  UARIV_Notificacion ua 
-	where ua.Id_Declaracion is null
+	where ( (ua.Id_Notificacion is null and  not( Fecha_Notificacion is null or   Fecha_Notificacion='19000101') )
+	 or (ua.Id_AA is null and  not( Fecha_AA is null  or Fecha_AA='19000101') ))
 OPEN Cur 
 FETCH NEXT FROM Cur INTO @id_UARIV, @fud, @identificacion, @Fecha_Notificacion, @Orfeo_aa, @Fecha_AA
 WHILE ( @@FETCH_STATUS = 0 )
@@ -53,7 +54,7 @@ WHILE ( @@FETCH_STATUS = 0 )
 		begin
 		    set @id_aa=null;
 			set @id_notificacion=null;
-		    if( not( @Fecha_Notificacion='19000101'))
+		    if( not( @Fecha_Notificacion is null or   @Fecha_Notificacion='19000101'))
 			begin
 		    set @Id_EstadoUnidad_notificacion=null;
 		    select top 1 @Id_EstadoUnidad_notificacion= Declaracion_Unidades.Id_EstadoUnidad  from Declaracion_Unidades
@@ -73,7 +74,7 @@ WHILE ( @@FETCH_STATUS = 0 )
 			end
 			end
 
-			if(not( @orfeo_aa ='00000' or @orfeo_aa='' or @Fecha_AA='19000101') )
+			if(not( @Fecha_AA is null  or @Fecha_AA='19000101') )
 			begin
 			    set @Id_EstadoUnidad_AA=null;
 				select top 1 @Id_EstadoUnidad_AA= Declaracion_Unidades.Id_EstadoUnidad  from Declaracion_Unidades
@@ -106,3 +107,7 @@ WHILE ( @@FETCH_STATUS = 0 )
 CLOSE Cur 
 DEALLOCATE Cur 
 
+
+/*
+
+*/
