@@ -78,19 +78,28 @@ SELECT
 	Coalesce(Declaracion.Promedio_Ingresos_Mensuales,0) as PromedioIngresos,
 	Coalesce(DaniosFamilia.Descripcion, '') as DaniosFamila,
 	Coalesce(VBGGeneral.Descripcion, '') as VBGGeneral,
-	/*Coalesce(.Descripcion,'') as ,
-	Coalesce(.Descripcion,'') as
-	Coalesce(.Descripcion,'') as ,
-	Coalesce(.Descripcion,'') as ,
-	Coalesce(.Descripcion,'') as ,*/
+	Coalesce(Declaracion.VBG_General_Agresor,'') as VBGGeneralAgresor,
+	Coalesce(AddMuerto.Descripcion,'') as ADDMuerto,
+	Coalesce(DddMuerto.Descripcion,'') as DDDMuerto,
+	Coalesce(Desaparecido.Descripcion,'') as Desaparecido,
+	Coalesce(Retornaria.Descripcion,'') as Retornaria,
+	Coalesce(MotivoNoRetornaria.Descripcion,'') as MotivoNoRetornaria,
+	Coalesce(AtencionPsicosocial.Descripcion,'') as AtencionPsicosocial,
+	Coalesce(HaAfectadoDesplazamiento.Descripcion,'') as HaAfectadoDesplazamiento,
+	Coalesce(AyudaHablar.Descripcion,'') as AyudaHablar,
+	Coalesce(PersonasAyudaHablar.Descripcion, '') as PersonasAyudaHablar,
+	Coalesce(Adiccion.Descripcion,'') as Adiccion,
+	Coalesce(AdiccionAlcohol.Descripcion,'') as AdiccionAlcohol,
+	Coalesce(AdiccionDroga.Descripcion,'') as AdiccionDroga,
+	Coalesce(BienesPerdio.Descripcion,'') as BienesPerdio,
+	Coalesce(TipoBienRural.Descripcion,'') as TipoBienRural,
+	Coalesce(DocumentoPropiedad.Descripcion,'') as DocumentoPropiedad,
+	Coalesce(CopiaDocumento.Descripcion,'') as CopiaDocumento,
+	Coalesce(DestinoTierra.Descripcion,'') as DestinoTierra,
+	Coalesce(SituacionActual.Descripcion,'') as SituacionActual,
+	/* */
 	Coalesce(ApoyoEmocional.Descripcion,'') as ApoyoEmocional
-	/*
-	left join SubTablas SolicitoAyuda on SolicitoAyuda.Id= Declaracion.Id_Solicito_ayuda
-left join SubTablas EntidadInicial on EntidadInicial.Id = Declaracion.Id_Entidad_Inicial_Atencion
-left join SubTablas ComoFueAtencion on ComoFueAtencion.Id=Declaracion.Id_Como_Fue_Atencion
-fuente Ingresos
-
-	*/
+	/* */
 	FROM       Declaracion 
 INNER JOIN Personas ON Declaracion.Id = Personas.Id_Declaracion
 left join SubTablas Grupo on Grupo.Id= Declaracion.Id_Grupo 
@@ -142,7 +151,7 @@ left join SubTablas AguaPotable on AguaPotable.Id= Declaracion.Id_Agua_Potable
 left join (
 select distinct(Id_Declaracion), 
 ( SELECT Stuff(
-  (SELECT N', ' + tt1.Descripcion from 
+  (SELECT N'- ' + tt1.Descripcion from 
   (
   select sdoa.Descripcion
   from Declaracion_Obtencion_Agua doa
@@ -162,7 +171,7 @@ left join SubTablas HaRegresado on HaRegresado.Id= Declaracion.Id_Ha_Regresado
 left join (
 select distinct(Id_Declaracion), 
 ( SELECT Stuff(
-  (SELECT N', ' + tt1.Descripcion from 
+  (SELECT N'- ' + tt1.Descripcion from 
   (
   select sdoa.Descripcion
   from Declaracion_Causas_Desplazamiento doa
@@ -185,7 +194,7 @@ left join SubTablas ComoFueAtencion on ComoFueAtencion.Id=Declaracion.Id_Como_Fu
 left join (
 select distinct(Id_Declaracion), 
 ( SELECT Stuff(
-  (SELECT N'-' + tt1.Descripcion from 
+  (SELECT N'- ' + tt1.Descripcion from 
   (
   select sdoa.Descripcion
   from Declaracion_Fuentes_Ingreso doa
@@ -199,7 +208,7 @@ from Declaracion_Fuentes_Ingreso
 left join (
 select distinct(Id_Declaracion), 
 ( SELECT Stuff(
-  (SELECT N'-' + tt1.Descripcion from 
+  (SELECT N'- ' + tt1.Descripcion from 
   (
   select sdoa.Descripcion
   from Declaracion_Danos_Familia doa
@@ -212,6 +221,50 @@ from Declaracion_Danos_Familia
 --
 left join SubTablas VBGGeneral on VBGGeneral.Id = Declaracion.Id_VBG_general 
 
+left join SubTablas AddMuerto on AddMuerto.Id= Declaracion.Id_Ha_Muerto_Alguien
+left join SubTablas DddMuerto on DddMuerto.Id= Declaracion.Id_Ha_Muerto_Despues
+left join SubTablas Desaparecido on Desaparecido.Id= Declaracion.Id_Tiene_Desaparecido
+left join SubTablas Retornaria on Retornaria.Id= Declaracion.Id_Retornaria
+left join SubTablas MotivoNoRetornaria on MotivoNoRetornaria.Id=Declaracion.Id_Explicacion_Retorno
+left join SubTablas AtencionPsicosocial on AtencionPsicosocial.Id = Declaracion.Id_Solicito_Atencion_Psicologica
+left join SubTablas HaAfectadoDesplazamiento on HaAfectadoDesplazamiento.Id = Declaracion.Id_Afectado_Desplazamiento
+left join SubTablas AyudaHablar on AyudaHablar.Id = Declaracion.Id_Emociones
+left join SubTablas Adiccion on Adiccion.Id = Declaracion.Id_Tipo_Adiccion
+left join SubTablas AdiccionAlcohol on AdiccionAlcohol.Id= Declaracion.Id_Adiccion_Alcohol
+left join SubTablas AdiccionDroga on AdiccionDroga.Id= Declaracion.Id_Adiccion_Droga
+left join (
+select distinct(Id_Declaracion), 
+( SELECT Stuff(
+  (SELECT N'- ' + tt1.Descripcion from 
+  (
+  select sdoa.Descripcion
+  from Declaracion_Personas_Ayuda doa
+  left join SubTablas sdoa on sdoa.Id = doa.Id_Personas_Ayuda
+  where doa.Id_Declaracion = Declaracion_Personas_Ayuda.Id_Declaracion
+  ) as tt1 FOR XML PATH(''),TYPE)
+  .value('text()[1]','nvarchar(max)'),1,2,N'') as Decripcion ) as Descripcion
+from Declaracion_Personas_Ayuda
+) PersonasAyudaHablar  on PersonasAyudaHablar.Id_Declaracion=Declaracion.id
+---
+left join (
+select distinct(Id_Declaracion), 
+( SELECT Stuff(
+  (SELECT N'- ' + tt1.Descripcion from 
+  (
+  select sdoa.Descripcion
+  from Declaracion_Bienes doa
+  left join SubTablas sdoa on sdoa.Id = doa.Id_Bienes
+  where doa.Id_Declaracion = Declaracion_Bienes.Id_Declaracion
+  ) as tt1 FOR XML PATH(''),TYPE)
+  .value('text()[1]','nvarchar(max)'),1,2,N'') as Decripcion ) as Descripcion
+from Declaracion_Bienes
+) BienesPerdio  on BienesPerdio.Id_Declaracion=Declaracion.id
+---
+left join SubTablas  TipoBienRural on TipoBienRural.Id=Declaracion.Id_Tipo_Bien_Rural
+left join SubTablas DocumentoPropiedad on DocumentoPropiedad.Id= Declaracion.Id_Documento_Propiedad
+left join SubTablas CopiaDocumento on  CopiaDocumento.Id= Declaracion.Id_Tiene_Documento
+left join SubTablas DestinoTierra on DestinoTierra.Id= Declaracion.Id_Destino_Tierra
+left join SubTablas SituacionActual on SituacionActual.Id= Declaracion.Id_Situacion_Actual_Tierras
 left join Subtablas ApoyoEmocional on ApoyoEmocional.Id= ds.Id_Apoyo_Emocional,
 (
   select per.Id_Declaracion, count(per.Id)  as TotalFamilia,
