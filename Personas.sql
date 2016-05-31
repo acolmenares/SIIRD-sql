@@ -1,6 +1,10 @@
 --StoredProcedure [dbo].[PersonasConsultarBusqueda]  
 use  [IRDCOL]
 
+declare  @Tipo_Declaracion int ='921' -- desplazado
+declare  @Fecha_Valoracion_Inicial varchar(8) = '20151001'  -- 
+declare  @Fecha_Valoracion_Final varchar(8)='20160430'--
+
 SELECT  
 Personas.Id,
 Declaracion.Id as Declaracion,
@@ -178,9 +182,9 @@ left join SubTablas EstadoNotificacion on EstadoNotificacion.Id= Notificacion.Id
   from Personas per group by per.Id_Declaracion
 ) as PerCount 
 WHERE PerCount.Id_Declaracion= Declaracion.Id
-And Declaracion.Tipo_Declaracion='921' -- desplazado 
-And Declaracion.Fecha_Valoracion>='20151001 00:00:00'  -- para discapacitados prm vii y prm viii
-And Declaracion.Fecha_Valoracion<='20160430 00:00:00'  -- para discapacitados prm vii y prm viii
+And Declaracion.Tipo_Declaracion=@Tipo_Declaracion
+And Declaracion.Fecha_Valoracion>=@Fecha_Valoracion_Inicial  
+And Declaracion.Fecha_Valoracion<=@Fecha_Valoracion_Final 
 --and Discapacitados.Descripcion='Si' -- para discapacitados prm vii y prm viii
 Order by personas.id_declaracion, tipo desc, edad desc 
 
