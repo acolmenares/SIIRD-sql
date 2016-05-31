@@ -1,7 +1,7 @@
 use IRDCOL
-declare  @Fecha_Inicial_Radicacion varchar(8) = '20151001';
-declare  @Fecha_Final_Radicacion varchar(8) = '20160430';
-declare  @Declarante int = 921
+declare  @Fecha_Radicacion_Inicial varchar(8) = '20151001';
+declare  @Fecha_Radicacion_Final varchar(8) = '20160430';
+declare  @Tipo_Declaracion int = 921
 declare  @Tipo_Persona varchar(1) ='D';
 declare  @SegundaEntrega int = 918
 
@@ -273,9 +273,9 @@ left join Subtablas ApoyoEmocional on ApoyoEmocional.Id= ds.Id_Apoyo_Emocional,
   from Personas per group by per.Id_Declaracion
 ) as PerCount 
 WHERE     (Personas.Tipo = @Tipo_Persona)  
-And Declaracion.Fecha_Radicacion >= @Fecha_Inicial_Radicacion
-And Declaracion.Fecha_Radicacion <= @Fecha_Final_Radicacion
-AND Declaracion.Tipo_Declaracion = @Declarante
+And Declaracion.Fecha_Radicacion >= @Fecha_Radicacion_Inicial
+And Declaracion.Fecha_Radicacion <= @Fecha_Radicacion_Final
+AND Declaracion.Tipo_Declaracion = @Tipo_Declaracion
 and PerCount.Id_Declaracion= Declaracion.Id
 order by Declaracion.Id
 
