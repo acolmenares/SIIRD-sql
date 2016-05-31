@@ -44,7 +44,7 @@ SELECT
 	+ Coalesce(Declaracion.Lactantes,0)
 	+ Coalesce(Declaracion.Resto_Nucleo,0) as TFE,
 	PerCount.TotalFamilia as TFR,
-	Coalesce(NoAtencion.Descripcion,'') as Motivo_No_Atencion,
+	Coalesce(NoAtencion.Descripcion,'') as MotivoNoAtencion,
 	Coalesce(TipoTenencia.Descripcion,'') as TipoTenencia,
 	Coalesce(Habitaciones.Descripcion,'') as Habitaciones,
 	Coalesce(PerVivienda.Descripcion,'') as PersonasVivienda,
