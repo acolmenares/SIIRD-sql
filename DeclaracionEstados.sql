@@ -1,7 +1,7 @@
 use IRDCOL;
 
 declare  @Fecha_Inicial_Radicacion varchar(8) = '20151001';
-declare  @Fecha_Final_Radicacion varchar(8) = '20160430';
+declare  @Fecha_Final_Radicacion varchar(8) = '20160531';
 declare  @Declarante int = 921
 declare  @Tipo_Persona varchar(1) ='D';
 
@@ -12,11 +12,11 @@ declare  @Id_ReProgramado int = 4039
 declare  @Id_NO int = 20
 
 select 
-Declaracion.Id,
-Declaracion.Fecha_Radicacion,
-	Declaracion.Fecha_Desplazamiento,
-	Declaracion.Fecha_Declaracion,
-	Declaracion.Fecha_Valoracion as Fecha_Atencion,
+    Declaracion.Id,
+	convert(date,Declaracion.Fecha_Radicacion) as Fecha_Radicacion,
+	convert(date,Declaracion.Fecha_Desplazamiento) as Fecha_Desplazamiento,
+	convert(date,Declaracion.Fecha_Declaracion) as Fecha_Declaracion ,
+	convert(date,Declaracion.Fecha_Valoracion) as Fecha_Atencion,
 	Declaracion.Horario,
 	Grupo.Descripcion as Grupo,
 	Fuente.Descripcion as Fuente,
@@ -41,13 +41,13 @@ Declaracion.Fecha_Radicacion,
 	+ Coalesce(Declaracion.Resto_Nucleo,0) as TFE,
 	PerCount.TotalFamilia as TFR,
 	Coalesce(Elegible.Descripcion,'') as Elegible,
-	DElegible.Fecha as FechaElegible,
+	convert(date,DElegible.Fecha) as FechaElegible,
 	Coalesce(Contactado.Descripcion,'') as Contactado,
-	DContactado.Fecha as FechaContactado,
+	convert(date,DContactado.Fecha) as FechaContactado,
 	Coalesce(Programado.Descripcion,'') as Programado,
-	DProgramado.Fecha as FechaProgramado,
+	convert(date,DProgramado.Fecha) as FechaProgramado,
 	Coalesce(ReProgramado.Descripcion,'') as ReProgramado,
-	DReProgramado.Fecha as FechaReProgramado,
+	convert(date,DReProgramado.Fecha) as FechaReProgramado,
 	Atendido.Descripcion as Atendido,
 	Coalesce(NoAtencion.Descripcion,'') as MotivoNoAtencion,
 	Coalesce(TipoReProgramacion.Descripcion,'') as TipoReprogramacion
@@ -138,7 +138,7 @@ left join SubTablas TipoReProgramacion on TipoReProgramacion.Id= pr.Id_TipoEntre
   from Personas per group by per.Id_Declaracion
 ) as PerCount 
 
-WHERE     (Personas.Tipo = @Tipo_Persona)  
+WHERE (Personas.Tipo = @Tipo_Persona)  
 And Declaracion.Fecha_Radicacion >= @Fecha_Inicial_Radicacion
 And Declaracion.Fecha_Radicacion <= @Fecha_Final_Radicacion
 AND Declaracion.Tipo_Declaracion = @Declarante

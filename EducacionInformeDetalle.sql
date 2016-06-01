@@ -17,7 +17,7 @@ set @id_segunda=918
 set  @id_seguimiento=919
 set @Id_Regional=null
 set @FechaAtencionInicial='20151001'
-set @FechaAtencionFinal='20160430'
+set @FechaAtencionFinal='20160531'
 set @FechaCorte=@FechaAtencionFinal
 
 select 
@@ -52,7 +52,7 @@ from
 (
 select
     p.*,
-	CONVERT(CHAR(7), p.Fecha_Atencion,112)  as MesAtencion,
+	CONVERT(CHAR(6), p.Fecha_Atencion,112)  as MesAtencion,
 	case when p.graduado_PE='Si' then 1 else 0 end as PE_Graduados,
 	case when p.Estudia_PE='Si' and p.Municipio_PE=p.MunicipioAtencion and p.Certificado_PE='Si' then 1 else 0 end as PE_Estudian_MA_CC,
 	case when p.Estudia_PE='Si' and p.Municipio_PE=p.MunicipioAtencion and not p.Certificado_PE='Si' then 1 else 0 end as PE_Estudian_MA_SC,
@@ -75,10 +75,10 @@ Personas.Id as Id_Persona,
 Coalesce(grupos.Descripcion,'') as Grupo, 
 Sucursales.Nombre as Regional,
 Lentrega.Descripcion as MunicipioAtencion,   
-dbo.ConvertirFecha(Declaracion.Fecha_Radicacion) as Fecha_Radicacion,
-dbo.ConvertirFecha(Declaracion.Fecha_Declaracion) as Fecha_Declaracion,
-dbo.ConvertirFecha(Declaracion.Fecha_Desplazamiento) as Fecha_Desplazamiento,
-dbo.ConvertirFecha(Declaracion.Fecha_Valoracion) as Fecha_Atencion,
+convert(date,Declaracion.Fecha_Radicacion) as Fecha_Radicacion,
+convert(date,Declaracion.Fecha_Declaracion) as Fecha_Declaracion,
+convert(date,Declaracion.Fecha_Desplazamiento) as Fecha_Desplazamiento,
+convert(date,Declaracion.Fecha_Valoracion) as Fecha_Atencion,
 Personas.Tipo,
 TipoIdentificacion.Descripcion as TI,
 Personas.Identificacion,
@@ -87,7 +87,7 @@ Coalesce(Personas.Segundo_Apellido,'') as Segundo_Apellido,
 Personas.Primer_Nombre, 
 Coalesce(Personas.Segundo_Nombre,'') as Segundo_Nombre,
 Coalesce(Personas.Edad,'') as Edad,
-dbo.ConvertirFecha(Personas.Fecha_Nacimiento) as Fecha_Nacimiento,
+convert(date,Personas.Fecha_Nacimiento) as Fecha_Nacimiento,
 Coalesce( Etnias.Descripcion ,'') as Etnia,
 Coalesce(Discapacitados.Descripcion ,'') as Discapacitado,
 Coalesce(TipoDiscapacidad.Descripcion ,'') as TipoDiscapacidad,
@@ -100,8 +100,8 @@ Coalesce(Direccion.Descripcion,'') as Direccion_Declarante,
 Coalesce(Barrio.Descripcion,'') as Barrio_Declarante,
 
 coalesce(EstadoRUV.Descripcion,'') as Estado_RUV,
-dbo.ConvertirFecha(RUV.Fecha_Inclusion) as Fecha_Valoracion_RUV,
-dbo.ConvertirFecha(RUV.Fecha_Investigacion) as Fecha_Investigacion_RUV,
+convert(date,RUV.Fecha_Inclusion) as Fecha_Valoracion_RUV,
+convert(date,RUV.Fecha_Investigacion) as Fecha_Investigacion_RUV,
 
 EA.Descripcion as Estudiaba_Antes,
 coalesce(MUN_EA.Descripcion,'') as Municipio_EA,
@@ -116,7 +116,7 @@ coalesce(MUN_PE.Descripcion,'')  as Municipio_PE,
 coalesce(Personas.Institucion_Estudia,'') as Institucion_PE,
 coalesce(apoyo.Descripcion,'')  as ApoyoEducativo,
 
-dbo.ConvertirFecha(e_segunda.Fecha) as Fecha_SE,
+convert(date,e_segunda.Fecha) as Fecha_SE,
 coalesce(E_SE.Descripcion,'') as Estudia_SE,
 coalesce(MNE_SE.Descripcion,'') as Motivo_NE_SE,
 case when e_segunda.Id_Motivo_NoEstudia =@id_yasegraduo then 'Si' else case when e_segunda.Id_Motivo_NoEstudia is null then '' else 'No' end   end as Graduado_SE,
@@ -125,7 +125,7 @@ coalesce(G_SE.Descripcion,'') as Grado_SE,
 coalesce(MUN_SE.Descripcion,'')  as Municipio_SE,
 coalesce(e_segunda.Establecimiento,'') as Instituto_SE,
 
-dbo.ConvertirFecha(e_seguimiento.Fecha) as Fecha_SEG,
+convert(date,e_seguimiento.Fecha) as Fecha_SEG,
 coalesce(E_SEG.Descripcion,'') as Estudia_SEG,
 coalesce(MNE_SEG.Descripcion,'') as Motivo_NE_SEG,
 case when e_seguimiento.Id_Motivo_NoEstudia =@id_yasegraduo then 'Si' else case when e_seguimiento.Id_Motivo_NoEstudia is null then '' else 'No' end   end as Graduado_SEG,
@@ -137,7 +137,7 @@ coalesce(MUN_SEG.Descripcion,'')  as Municipio_SEG,
 coalesce(e_seguimiento.Establecimiento,'') as Instituto_SEG,
 
 case when e_seguimiento.id is null then case when e_segunda.id is null then 'Primera' else 'Segunda' end else case when e_segunda.Fecha> e_seguimiento.Fecha then 'Segunda' else  'Seguimiento' end end as SF, 
-case when e_seguimiento.id is null then case when e_segunda.id is null then dbo.ConvertirFecha(Declaracion.Fecha_Valoracion) else dbo.ConvertirFecha(e_segunda.Fecha) end else case when e_segunda.Fecha> e_seguimiento.Fecha then dbo.ConvertirFecha(e_segunda.Fecha) else  dbo.ConvertirFecha(e_seguimiento.Fecha) end end as Fecha_SF, 
+case when e_seguimiento.id is null then case when e_segunda.id is null then convert(date,Declaracion.Fecha_Valoracion) else convert(date,e_segunda.Fecha) end else case when e_segunda.Fecha> e_seguimiento.Fecha then convert(date,e_segunda.Fecha) else  convert(date,e_seguimiento.Fecha) end end as Fecha_SF, 
 coalesce(case when e_seguimiento.id is null then case when e_segunda.id is null then E_PE.Descripcion else E_SE.Descripcion end else case when e_segunda.Fecha> e_seguimiento.Fecha then E_SE.Descripcion else  E_SEG.Descripcion end end, '') as Estudia_SF, 
 coalesce(case when e_seguimiento.id is null then case when e_segunda.id is null then MNE_PE.Descripcion else MNE_SE.Descripcion end else case when e_segunda.Fecha> e_seguimiento.Fecha then MNE_SE.Descripcion else  MNE_SEG.Descripcion end end, '') as Motivo_NE_SF, 
 case when (case when e_seguimiento.id is null then case when e_segunda.Id is null then Personas.Id_Motivo_NoEstudio else e_segunda.Id_Motivo_NoEstudia end else case when e_segunda.Fecha> e_seguimiento.Fecha then e_segunda.Id_Motivo_NoEstudia else e_seguimiento.Id_Motivo_NoEstudia end end)=@id_yasegraduo then 'Si' else 'No'end as Graduado_SF,

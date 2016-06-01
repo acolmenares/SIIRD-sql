@@ -3,7 +3,9 @@ use  [IRDCOL]
 
 declare  @Tipo_Declaracion int ='921' -- desplazado
 declare  @Fecha_Valoracion_Inicial varchar(8) = '20151001'  -- 
-declare  @Fecha_Valoracion_Final varchar(8)='20160430'--
+declare  @Fecha_Valoracion_Final varchar(8)='20160531'--
+
+declare  @Tipo_Persona varchar(1) ='D';
 
 SELECT  
 Personas.Id,
@@ -12,10 +14,10 @@ Sucursales.Nombre as Regional,
 LFuentes.Descripcion as Lugar_Fuente,
 Coalesce(grupos.Descripcion,'') as Grupo,
 Fuentes.Descripcion as Fuente,
-dbo.ConvertirFecha(Declaracion.Fecha_Radicacion) as Fecha_Radicacion,
-dbo.ConvertirFecha(Declaracion.Fecha_Declaracion) as Fecha_Declaracion,
-dbo.ConvertirFecha(Declaracion.Fecha_Desplazamiento) as Fecha_Desplazamiento,
-dbo.ConvertirFecha(Declaracion.Fecha_Valoracion) as Fecha_Atencion,
+convert(date,Declaracion.Fecha_Radicacion) as Fecha_Radicacion,
+convert(date,Declaracion.Fecha_Declaracion) as Fecha_Declaracion,
+convert(date,Declaracion.Fecha_Desplazamiento) as Fecha_Desplazamiento,
+convert(date,Declaracion.Fecha_Valoracion) as Fecha_Atencion,
 Personas.Tipo,
 TipoIdentificacion.Descripcion as TI,
 Personas.Identificacion,
@@ -24,7 +26,7 @@ Coalesce(Personas.Segundo_Apellido,'') as Segundo_Apellido,
 Personas.Primer_Nombre, 
 Coalesce(Personas.Segundo_Nombre,'') as Segundo_Nombre,
 Coalesce(Personas.Edad,'') as Edad,
-dbo.ConvertirFecha(Personas.Fecha_Nacimiento) as Fecha_Nacimiento,
+convert(date,Personas.Fecha_Nacimiento) as Fecha_Nacimiento,
 Coalesce(Generos.Descripcion ,'') as Genero,
 Coalesce(Parentescos.Descripcion ,'') as Parentesco,
 Coalesce(Embarazadas.Descripcion ,'') as Embarazada,
@@ -51,24 +53,24 @@ Coalesce(Direccion.Descripcion,'') as Direccion_Declarante,
 Coalesce(Barrio.Descripcion,'') as Barrio_Declarante,
 
 coalesce(EstadoRUV.Descripcion,'') as Estado_RUV,
-dbo.ConvertirFecha(RUV.Fecha_Inclusion) as Fecha_Valoracion_RUV,
-dbo.ConvertirFecha(RUV.Fecha_Investigacion) as Fecha_Investigacion_RUV,
+convert(date,RUV.Fecha_Inclusion) as Fecha_Valoracion_RUV,
+convert(date,RUV.Fecha_Investigacion) as Fecha_Investigacion_RUV,
 
 coalesce(EstadoPAARI.Descripcion,'') as Estado_PAARI,
-dbo.ConvertirFecha(PAARI.Fecha_Inclusion) as Fecha_Inclusion_PAARI,
-dbo.ConvertirFecha(PAARI.Fecha_Investigacion) as Fecha_Investigacion_PAARI,
+convert(date,PAARI.Fecha_Inclusion) as Fecha_Inclusion_PAARI,
+convert(date,PAARI.Fecha_Investigacion) as Fecha_Investigacion_PAARI,
 
 coalesce(EstadoFA.Descripcion,'') as Estado_FAccion,
-dbo.ConvertirFecha(FA.Fecha_Inclusion) as Fecha_Inclusion_FAccion,
-dbo.ConvertirFecha(FA.Fecha_Investigacion) as Fecha_Investigacion_FAccion,
+convert(date,FA.Fecha_Inclusion) as Fecha_Inclusion_FAccion,
+convert(date,FA.Fecha_Investigacion) as Fecha_Investigacion_FAccion,
 
 coalesce(EstadoAA.Descripcion,'') as Estado_AA,
-dbo.ConvertirFecha(AA.Fecha_Inclusion) as Fecha_AA,
-dbo.ConvertirFecha(AA.Fecha_Investigacion) as Fecha_Investigacion_AA,
+convert(date,AA.Fecha_Inclusion) as Fecha_AA,
+convert(date,AA.Fecha_Investigacion) as Fecha_Investigacion_AA,
 
 coalesce(EstadoNotificacion.Descripcion,'') as Estado_Notificacion,
-dbo.ConvertirFecha(Notificacion.Fecha_Inclusion) as Fecha_Notificacion,
-dbo.ConvertirFecha(Notificacion.Fecha_Investigacion) as Fecha_Investigacion_Notificacion,
+convert(date,Notificacion.Fecha_Inclusion) as Fecha_Notificacion,
+convert(date,Notificacion.Fecha_Investigacion) as Fecha_Investigacion_Notificacion,
 PerCount.TotalFamilia,
 PerCount.Ninos05,
 PerCount.Ninos617
@@ -93,7 +95,6 @@ left join SubTablas SabeLE  on SabeLE.Id = Personas.Id_Sabe_Leer_Escribir
 left join SubTablas MotivoNE  on MotivoNE.Id = Personas.Id_Motivo_NoEstudio
 left join SubTablas ApoyoEducativo  on ApoyoEducativo.Id = Personas.Id_Tipo_Apoyo_Educativo
 left join SubTablas Etnias  on Etnias.Id = Personas.Id_Grupo_Etnico
---
 left join Personas_Regimen_Salud rs_primera
 	on   rs_primera.Id= ( 
 	select top 1 Personas_Regimen_Salud.Id  from Personas_Regimen_Salud
@@ -106,8 +107,7 @@ left join SubTablas eps_primera on eps_primera.id= rs_primera.Id_Eps
 left join SubTablas municipio_primera on municipio_primera.id= rs_primera.Id_Municipio
 left join SubTablas departamento_primera on departamento_primera.id= municipio_primera.Id_Padre
 
---
-left join Personas Declarante on Declarante.Id_Declaracion= Personas.Id_Declaracion and Declarante.Tipo='D'
+left join Personas Declarante on Declarante.Id_Declaracion= Personas.Id_Declaracion and Declarante.Tipo=@Tipo_Persona
 left join Personas_Contactos Celular 
 	on   Celular.Id= ( 
 	select top 1 Personas_Contactos.Id  from Personas_Contactos
@@ -129,7 +129,6 @@ left join Personas_Contactos Direccion
 	and Personas_Contactos.Id_Tipo_Contacto=74 
 	order by Personas_Contactos.Activo desc, Personas_Contactos.Id desc
 	)
---
 left join Declaracion_Unidades RUV 
 	on   RUV.Id= ( 
 	select top 1 Declaracion_Unidades.Id  from Declaracion_Unidades
@@ -138,7 +137,6 @@ left join Declaracion_Unidades RUV
 	order by Declaracion_Unidades.Fecha_Investigacion desc, Declaracion_Unidades.Id desc
 	)
 left join SubTablas EstadoRUV on EstadoRUV.Id= RUV.Id_EstadoUnidad
----
 left join Declaracion_Unidades PAARI 
 	on   PAARI.Id= ( 
 	select top 1 Declaracion_Unidades.Id  from Declaracion_Unidades
@@ -147,7 +145,6 @@ left join Declaracion_Unidades PAARI
 	order by Declaracion_Unidades.Fecha_Investigacion desc, Declaracion_Unidades.Id desc
 	)
 left join SubTablas EstadoPAARI on EstadoPAARI.Id= PAARI.Id_EstadoUnidad
---
 left join Declaracion_Unidades FA 
 	on   FA.Id= ( 
 	select top 1 Declaracion_Unidades.Id  from Declaracion_Unidades
@@ -156,7 +153,6 @@ left join Declaracion_Unidades FA
 	order by Declaracion_Unidades.Fecha_Investigacion  desc, Declaracion_Unidades.Id desc
 	)
 left join SubTablas EstadoFA on EstadoFA.Id= FA.Id_EstadoUnidad
---
 left join Declaracion_Unidades AA 
 	on   AA.Id= ( 
 	select top 1 Declaracion_Unidades.Id  from Declaracion_Unidades
@@ -165,7 +161,6 @@ left join Declaracion_Unidades AA
 	order by Declaracion_Unidades.Fecha_Investigacion desc, Declaracion_Unidades.Id desc
 	)
 left join SubTablas EstadoAA on EstadoAA.Id= AA.Id_EstadoUnidad
---
 left join Declaracion_Unidades Notificacion
 	on   Notificacion.Id= ( 
 	select top 1 Declaracion_Unidades.Id  from Declaracion_Unidades
@@ -175,7 +170,6 @@ left join Declaracion_Unidades Notificacion
 	)
 left join SubTablas EstadoNotificacion on EstadoNotificacion.Id= Notificacion.Id_EstadoUnidad,
 (
-  
   select per.Id_Declaracion, count(per.Id)  as TotalFamilia,
    sum( case when (per.Edad>=0 and per.Edad<=5) then 1 else 0 end) as Ninos05,
    sum( case when (per.Edad>=6 and per.Edad<=17) then 1 else 0 end) as Ninos617

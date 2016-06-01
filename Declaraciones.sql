@@ -1,16 +1,16 @@
 use IRDCOL
 declare  @Fecha_Radicacion_Inicial varchar(8) = '20151001';
-declare  @Fecha_Radicacion_Final varchar(8) = '20160430';
-declare  @Tipo_Declaracion int = 921
-declare  @Tipo_Persona varchar(1) ='D';
+declare  @Fecha_Radicacion_Final varchar(8) = '20160531';
+declare  @Tipo_Declaracion int = 921  --desplazado
+declare  @Tipo_Persona varchar(1) ='D';  --declarante
 declare  @SegundaEntrega int = 918
 
 SELECT     
 	Declaracion.Id,
-	Declaracion.Fecha_Radicacion,
-	Declaracion.Fecha_Desplazamiento,
-	Declaracion.Fecha_Declaracion,
-	Declaracion.Fecha_Valoracion as Fecha_Atencion,
+	convert(date,Declaracion.Fecha_Radicacion) as Fecha_Radicacion,
+	convert(date,Declaracion.Fecha_Desplazamiento) as Fecha_Desplazamiento,
+	convert(date,Declaracion.Fecha_Declaracion) as Fecha_Declaracion ,
+	convert(date,Declaracion.Fecha_Valoracion) as Fecha_Atencion,
 	Declaracion.Horario,
 	Grupo.Descripcion as Grupo,
 	Fuente.Descripcion as Fuente,
@@ -30,7 +30,7 @@ SELECT
 	Coalesce(Direccion.Descripcion,'') as Direccion,
 	Coalesce(Barrio.Descripcion,'') as Barrio,
 	Personas.Edad,
-	Personas.Fecha_Nacimiento,
+	convert(date,Personas.Fecha_Nacimiento) as Fecha_Nacimiento,
 	Generos.Descripcion as Genero,
 	Etnias.Descripcion as Etnia,
 	Coalesce(Declaracion.Gestantes,0) as Gestantes,
@@ -59,7 +59,7 @@ SELECT
 	Coalesce(Declaracion.Vereda_Desplazamiento ,'') as Vereda,
 	Coalesce(CuantasVecesDesplazado.Descripcion,'') as CuantasVecesDesplazado,
 	Coalesce(HaDeclaradoAntes.Descripcion,'') as HaDeclaradoAntes,
-    dbo.ConvertirFecha(Declaracion.Fecha_Desplazamiento_Anterior) as FechaDesplazamientoAnterior,
+    convert(date,Declaracion.Fecha_Desplazamiento_Anterior) as FechaDesplazamientoAnterior,
 	Coalesce(Declaracion.Lugar_Desplazamiento,'') as LugarDesplazamientoAntes,
 	Coalesce(HaRegresado.Descripcion,'') as HaRegresado,
 	Coalesce(CausasDesplazamiento.Descripcion,'') as CausasDesplazamiento,

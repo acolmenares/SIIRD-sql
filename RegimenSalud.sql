@@ -1,5 +1,16 @@
 USE [IRDCOL]
 
+declare  @Tipo_Declaracion int ='921' -- desplazado
+declare  @Fecha_Valoracion_Inicial varchar(8) = '20151001'  -- 
+declare  @Fecha_Valoracion_Final varchar(8)='20160531'--
+
+declare @Id_Subsidiado int = 106
+declare @Id_Contributivo int = 210
+
+declare @Id_PrimeraEntrega int = 72
+declare @Id_SegundaEntrega int = 918
+declare @Id_Seguimiento int = 919
+declare @Id_Antes int = 54
 
 /* Estado_SGSSS_PE ojo "Vinculado" es el mismo tratamiento de "Sin Acceso"  */
 
@@ -12,10 +23,10 @@ SELECT
 Coalesce(grupos.Descripcion,'') as Grupo,
 Fuentes.Descripcion as Fuente,
 LFuentes.Descripcion as Lugar_Fuente,
-dbo.ConvertirFecha(Declaracion.Fecha_Radicacion) as Fecha_Radicacion,
-dbo.ConvertirFecha(Declaracion.Fecha_Declaracion) as Fecha_Declaracion,
-dbo.ConvertirFecha(Declaracion.Fecha_Desplazamiento) as Fecha_Desplazamiento,
-dbo.ConvertirFecha(Declaracion.Fecha_Valoracion) as Fecha_Atencion,
+convert(date,Declaracion.Fecha_Radicacion) as Fecha_Radicacion,
+convert(date,Declaracion.Fecha_Declaracion) as Fecha_Declaracion,
+convert(date,Declaracion.Fecha_Desplazamiento) as Fecha_Desplazamiento,
+convert(date,Declaracion.Fecha_Valoracion) as Fecha_Atencion,
 Personas.Tipo,
 TipoIdentificacion.Descripcion as TI,
 Personas.Identificacion,
@@ -24,7 +35,7 @@ Coalesce(Personas.Segundo_Apellido,'') as Segundo_Apellido,
 Personas.Primer_Nombre, 
 Coalesce(Personas.Segundo_Nombre,'') as Segundo_Nombre,
 Coalesce(Personas.Edad,'') as Edad,
-dbo.ConvertirFecha(Personas.Fecha_Nacimiento) as Fecha_Nacimiento,
+convert(date,Personas.Fecha_Nacimiento) as Fecha_Nacimiento,
 Coalesce(Generos.Descripcion ,'') as Genero,
 dbo.ConcatenarNombres(Declarante.Primer_Nombre, Declarante.Segundo_Nombre, Declarante.Primer_Apellido, Declarante.Segundo_Apellido) as Nombre_Declarante,
 Declarante.Identificacion as Identificacion_Declarante,
@@ -39,35 +50,41 @@ Coalesce(municipio_antes.Descripcion, '') as Municipio_Antes,
 Coalesce(departamento_antes.Descripcion, '') as Dpto_Antes,
 
 Coalesce(regimen_salud_primera.Descripcion, '') as RS_PE,
-'SioNO Dependiendo del Regimen' as Afiliado_SGSSS_PE,
+case when 
+    (regimen_salud_primera.Id=@Id_Subsidiado or regimen_salud_primera.Id=@Id_Contributivo) then 'SI' else 'NO' end
+	as Afiliado_SGSSS_PE,
+--'SioNO' as Afiliado_SGSSS_PE,
 Coalesce(eps_primera.Descripcion, '') as EPS_PE,
 Coalesce(municipio_primera.Descripcion, '') as Municipio_PE,
 Coalesce(departamento_primera.Descripcion, '') as Depto_PE,
 
-dbo.ConvertirFecha(rs_segunda.Fecha) as Fecha_Segunda,
+convert(date,rs_segunda.Fecha) as Fecha_Segunda,
 Coalesce(regimen_salud_segunda.Descripcion, '') as RS_Segunda,
 Coalesce(eps_segunda.Descripcion, '') as EPS_Segunda,
 Coalesce(municipio_segunda.Descripcion, '') as Municipio_Segunda,
 Coalesce(departamento_segunda.Descripcion, '') as Dpto_Segunda,
 
-dbo.ConvertirFecha(rs_seguimiento.Fecha) as Fecha_Seguimiento,
+convert(date,rs_seguimiento.Fecha) as Fecha_Seguimiento,
 Coalesce(regimen_salud_seguimiento.Descripcion, '') as RS_Seguimiento,
 Coalesce(eps_seguimiento.Descripcion, '') as EPS_Seguimiento,
 Coalesce(municipio_seguimiento.Descripcion, '') as Municipio_Seguimiento,
 Coalesce(departamento_seguimiento.Descripcion, '') as Dpto_Seguimiento,
 
 coalesce(EstadoRUV.Descripcion,'') as Estado_RUV,
-dbo.ConvertirFecha(RUV.Fecha_Inclusion) as Fecha_Valoracion_RUV,
-dbo.ConvertirFecha(RUV.Fecha_Investigacion) as Fecha_Investigacion_RUV,
+convert(date,RUV.Fecha_Inclusion) as Fecha_Valoracion_RUV,
+convert(date,RUV.Fecha_Investigacion) as Fecha_Investigacion_RUV,
 
 case rs_cerrar.Id_Cerrar when 19 then case  when (rs_cerrar.Id_Eps is null or rs_cerrar.Id_Eps= 635) then 'NO' else 'SI' end else 'NO' end as Cerrado,
-dbo.ConvertirFecha(rs_cerrar.Fecha) as Fecha_Final,
+convert(date,rs_cerrar.Fecha) as Fecha_Final,
 Coalesce(regimen_salud_seguimiento_mr.Descripcion, '') as RS_Final,
 Coalesce(eps_seguimiento_mr.Descripcion, '') as EPS_Final,
 Coalesce(municipio_seguimiento_mr.Descripcion, '') as Municipio_Final,
 Coalesce(Departamento_seguimiento_mr.Descripcion, '') as Dpto_Final,
 Coalesce(tipo_seguimiento_mr.Descripcion, '') as TipoSeguimiento_Final,
-'SioNO Dependiendo del Regimen' as Afiliado_SGSSS_Final -- Subsidio o Contributio == si , lo demas No ojo
+case when 
+    (regimen_salud_seguimiento_MR.Id=@Id_Subsidiado or regimen_salud_seguimiento_MR.Id=@Id_Contributivo) then 'SI' else 'NO' end
+	as Afiliado_SGSSS_Final
+--'SioNO Dependiendo del Regimen' as Afiliado_SGSSS_Final -- Subsidiado o Contributivo == si , lo demas No ojo
 
 
 FROM Declaracion
@@ -108,7 +125,7 @@ left join Personas_Regimen_Salud rs_antes
 	on   rs_antes.Id= ( 
 	select top 1 Personas_Regimen_Salud.Id  from Personas_Regimen_Salud
 	where Personas_Regimen_Salud.Id_Persona=Personas.Id 
-	and Personas_Regimen_Salud.Id_Tipo_Entrega=54 -- antes
+	and Personas_Regimen_Salud.Id_Tipo_Entrega=@Id_Antes -- antes
 	order by Personas_Regimen_Salud.Fecha desc, Personas_Regimen_Salud.Id desc
 	)
 left join SubTablas regimen_salud_antes on regimen_salud_antes.id= rs_antes.Id_Regimen_Salud
@@ -120,7 +137,7 @@ left join Personas_Regimen_Salud rs_primera
 	on   rs_primera.Id= ( 
 	select top 1 Personas_Regimen_Salud.Id  from Personas_Regimen_Salud
 	where Personas_Regimen_Salud.Id_Persona=Personas.Id 
-	and Personas_Regimen_Salud.Id_Tipo_Entrega=72 -- primera
+	and Personas_Regimen_Salud.Id_Tipo_Entrega=@Id_PrimeraEntrega -- primera
 	order by Personas_Regimen_Salud.Fecha desc, Personas_Regimen_Salud.Id desc
 	)
 left join SubTablas regimen_salud_primera on regimen_salud_primera.id= rs_primera.Id_Regimen_Salud
@@ -132,7 +149,7 @@ left join Personas_Regimen_Salud rs_segunda
 	on   rs_segunda.Id= ( 
 	select top 1 Personas_Regimen_Salud.Id  from Personas_Regimen_Salud
 	where Personas_Regimen_Salud.Id_Persona=Personas.Id 
-	and Personas_Regimen_Salud.Id_Tipo_Entrega=918 -- segunda
+	and Personas_Regimen_Salud.Id_Tipo_Entrega=@Id_SegundaEntrega -- segunda
 	order by Personas_Regimen_Salud.Fecha desc, Personas_Regimen_Salud.Id desc
 	)
 left join SubTablas regimen_salud_segunda on regimen_salud_segunda.id= rs_segunda.Id_Regimen_Salud
@@ -144,7 +161,7 @@ left join Personas_Regimen_Salud rs_seguimiento
 	on   rs_seguimiento.Id= ( 
 	select top 1 Personas_Regimen_Salud.Id  from Personas_Regimen_Salud
 	where Personas_Regimen_Salud.Id_Persona=Personas.Id 
-	and Personas_Regimen_Salud.Id_Tipo_Entrega=919 -- seguimiento
+	and Personas_Regimen_Salud.Id_Tipo_Entrega=@Id_Seguimiento -- seguimiento
 	order by Personas_Regimen_Salud.Fecha desc, Personas_Regimen_Salud.Id desc
 	)
 left join SubTablas regimen_salud_seguimiento on regimen_salud_seguimiento.id= rs_seguimiento.Id_Regimen_Salud
@@ -173,13 +190,15 @@ left join SubTablas municipio_seguimiento_mr on municipio_seguimiento_mr.id= rs_
 left join SubTablas departamento_seguimiento_mr on departamento_seguimiento_mr.id= municipio_seguimiento_mr.Id_Padre
 left join SubTablas tipo_seguimiento_mr on tipo_seguimiento_mr.id= rs_cerrar.Id_Tipo_Entrega
 
-where declaracion.id_grupo <> 592   -- no procesado
-and (Declaracion.Id_Regional=1637 or Declaracion.Id_Regional=4521 ) --or Declaracion.Id_Regional=1865)
+where 
+--declaracion.id_grupo <> 592   -- no procesado
+--and (Declaracion.Id_Regional=1637 or Declaracion.Id_Regional=4521 ) --or Declaracion.Id_Regional=1865)
 --And Declaracion.Fecha_Radicacio >= '20151001 00:00:00' 
 --And Declaracion.Fecha_Radicacion <= '20160131 23:59:59'
-And Declaracion.Fecha_Valoracion >= '20151001 00:00:00' 
-And Declaracion.Fecha_Valoracion <= '20160430 23:59:59'
-and Declaracion.Tipo_Declaracion='921'  --desplazado
+--And 
+Declaracion.Fecha_Valoracion >= @Fecha_Valoracion_Inicial
+And Declaracion.Fecha_Valoracion <= @Fecha_Valoracion_Final
+and Declaracion.Tipo_Declaracion=@Tipo_Declaracion
 Order by personas.id_declaracion, Personas.tipo desc, Personas.edad desc
 
 --and (rs_cerrar.Id_Cerrar!=19 or rs_cerrar.Id_Eps is null or rs_cerrar.Id_Eps=635)

@@ -1,4 +1,10 @@
 USE [IRDCOL]
+
+declare  @Fecha_Radicacion_Inicial varchar(8) = '20151001';
+declare  @Fecha_Radicacion_Final varchar(8) = '20160531';
+declare  @Tipo_Declaracion int = 921  --desplazado
+declare  @Tipo_Persona varchar(1) ='D'; -- declarante
+
 SELECT
 ROW_NUMBER() over ( order by Declaracion.Id) as Num,
 Declaracion.Id,
@@ -6,9 +12,9 @@ Sucursales.Nombre as Regional,
 Coalesce(grupos.Descripcion,'') as Grupo,
 Fuentes.Descripcion as Fuente,
 LFuentes.Descripcion as Lugar_Fuente,
-dbo.ConvertirFecha(Declaracion.Fecha_Radicacion) as Fecha_Radicacion,
-dbo.ConvertirFecha(Declaracion.Fecha_Declaracion) as Fecha_Declaracion,
-dbo.ConvertirFecha(Declaracion.Fecha_Desplazamiento) as Fecha_Desplazamiento,
+convert(date,Declaracion.Fecha_Radicacion) as Fecha_Radicacion,
+convert(date,Declaracion.Fecha_Declaracion) as Fecha_Declaracion,
+convert(date,Declaracion.Fecha_Desplazamiento) as Fecha_Desplazamiento,
 Declaracion.Horario as H,
 TipoDeclarante.Descripcion as TipoDeclaracion,
 Declaracion.Numero_Declaracion,
@@ -23,43 +29,34 @@ Coalesce( Celular.Descripcion,'') as Celular,
 Coalesce(Direccion.Descripcion,'') as Direccion,
 Coalesce(Barrio.Descripcion,'') as Barrio,
 Coalesce(Personas.Edad,'') as Edad,
-dbo.ConvertirFecha(Personas.Fecha_Nacimiento) as Fecha_Nacimiento,
+convert(date,Personas.Fecha_Nacimiento) as Fecha_Nacimiento,
 Coalesce(Generos.Descripcion ,'') as Genero,
 Coalesce(Declaracion.Gestantes,0) as Gestantes,
-Coalesce( Declaracion.Menores_Ninas,0)  + Coalesce(Declaracion.Menores_Ninos,0) as Niños_Menores,
+Coalesce( Declaracion.Menores_Ninas,0)  + Coalesce(Declaracion.Menores_Ninos,0) as Menores,
 Coalesce(Declaracion.Recien_Nacidos,0) as Recien_Nacidos,
 Coalesce(Declaracion.Lactantes,0) as Lactantes,
 Coalesce(Declaracion.Resto_Nucleo,0) as Resto_Nucleo,
-Coalesce(Atendidos.Descripcion,'') as ATE, 
-dbo.ConvertirFecha(Declaracion.Fecha_Valoracion) as Fecha_Atencion,
+Coalesce(Atendidos.Descripcion,'') as Atendido, 
+convert(date,Declaracion.Fecha_Valoracion) as Fecha_Atencion,
 Coalesce(NoAtencion.Descripcion,'') as Motivo_No_Atencion,
---
 coalesce(EstadoVUR.Descripcion,'') as Estado_RUV,
-dbo.ConvertirFecha(VUR.Fecha_Inclusion) as Fecha_Valoracion_RUV,
-dbo.ConvertirFecha(VUR.Fecha_Investigacion) as Fecha_Investigacion_RUV,
---
+convert(date,VUR.Fecha_Inclusion) as Fecha_Valoracion_RUV,
+convert(date,VUR.Fecha_Investigacion) as Fecha_Investigacion_RUV,
 coalesce(EstadoPAARI.Descripcion,'') as Estado_PAARI,
-dbo.ConvertirFecha(PAARI.Fecha_Inclusion) as Fecha_Inclusion_PAARI,
-dbo.ConvertirFecha(PAARI.Fecha_Investigacion) as Fecha_Investigacion_PAARI,
---
---
+convert(date,PAARI.Fecha_Inclusion) as Fecha_Inclusion_PAARI,
+convert(date,PAARI.Fecha_Investigacion) as Fecha_Investigacion_PAARI,
 coalesce(EstadoFA.Descripcion,'') as Estado_FAccion,
-dbo.ConvertirFecha(FA.Fecha_Inclusion) as Fecha_Inclusion_FAccion,
-dbo.ConvertirFecha(FA.Fecha_Investigacion) as Fecha_Investigacion_FAccion,
---
+convert(date,FA.Fecha_Inclusion) as Fecha_Inclusion_FAccion,
+convert(date,FA.Fecha_Investigacion) as Fecha_Investigacion_FAccion,
 coalesce(EstadoAA.Descripcion,'') as Estado_AA,
-dbo.ConvertirFecha(AA.Fecha_Inclusion) as Fecha_AA,
-dbo.ConvertirFecha(AA.Fecha_Investigacion) as Fecha_Investigacion_AA,
---
---
---
+convert(date,AA.Fecha_Inclusion) as Fecha_AA,
+convert(date,AA.Fecha_Investigacion) as Fecha_Investigacion_AA,
 coalesce(EstadoNotificacion.Descripcion,'') as Estado_Notificacion,
-dbo.ConvertirFecha(Notificacion.Fecha_Inclusion) as Fecha_Notificacion,
-dbo.ConvertirFecha(Notificacion.Fecha_Investigacion) as Fecha_Investigacion_Notificacion,
+convert(date,Notificacion.Fecha_Inclusion) as Fecha_Notificacion,
+convert(date,Notificacion.Fecha_Investigacion) as Fecha_Investigacion_Notificacion,
 PerCount.TotalFamilia,
 PerCount.Ninos05,
 PerCount.Ninos617
-
 FROM         Declaracion 
 JOIN Personas ON Declaracion.Id = Personas.Id_Declaracion
 left join Sucursales on Sucursales.Id_Enlace=  Declaracion.Id_Regional
@@ -100,7 +97,6 @@ left join Declaracion_Unidades VUR
 	order by Declaracion_Unidades.Fecha_Investigacion desc, Declaracion_Unidades.Id desc
 	)
 left join SubTablas EstadoVUR on EstadoVUR.Id= VUR.Id_EstadoUnidad
---
 left join Declaracion_Unidades PAARI 
 	on   PAARI.Id= ( 
 	select top 1 Declaracion_Unidades.Id  from Declaracion_Unidades
@@ -109,8 +105,6 @@ left join Declaracion_Unidades PAARI
 	order by Declaracion_Unidades.Fecha_Investigacion desc, Declaracion_Unidades.Id desc
 	)
 left join SubTablas EstadoPAARI on EstadoPAARI.Id= PAARI.Id_EstadoUnidad
---
---
 left join Declaracion_Unidades FA 
 	on   FA.Id= ( 
 	select top 1 Declaracion_Unidades.Id  from Declaracion_Unidades
@@ -119,9 +113,6 @@ left join Declaracion_Unidades FA
 	order by Declaracion_Unidades.Fecha_Investigacion desc, Declaracion_Unidades.Id desc
 	)
 left join SubTablas EstadoFA on EstadoFA.Id= FA.Id_EstadoUnidad
---
---
---
 left join Declaracion_Unidades AA 
 	on   AA.Id= ( 
 	select top 1 Declaracion_Unidades.Id  from Declaracion_Unidades
@@ -130,9 +121,6 @@ left join Declaracion_Unidades AA
 	order by Declaracion_Unidades.Fecha_Investigacion desc, Declaracion_Unidades.Id desc
 	)
 left join SubTablas EstadoAA on EstadoAA.Id= AA.Id_EstadoUnidad
---
---
---
 left join Declaracion_Unidades Notificacion
 	on   Notificacion.Id= ( 
 	select top 1 Declaracion_Unidades.Id  from Declaracion_Unidades
@@ -142,31 +130,24 @@ left join Declaracion_Unidades Notificacion
 	)
 left join SubTablas EstadoNotificacion on EstadoNotificacion.Id= Notificacion.Id_EstadoUnidad,
 (
-  
   select per.Id_Declaracion, count(per.Id)  as TotalFamilia,
    sum( case when (per.Edad>=0 and per.Edad<=5) then 1 else 0 end) as Ninos05,
    sum( case when (per.Edad>=6 and per.Edad<=17) then 1 else 0 end) as Ninos617
   from Personas per group by per.Id_Declaracion
 ) as PerCount 
 
-
 WHERE     
 (Personas.Tipo = 'D')  -- declarante
---And Declaracion.Fecha_Valoracion>='20151001 00:00:00'
---And Declaracion.Fecha_Valoracion<='20160131 00:00:00'
-
-And Declaracion.Fecha_Radicacion >= '20151001 00:00:00' --'29.09.2014 00:00:00' --'2014.09.29 00:00:00'
-And Declaracion.Fecha_Radicacion <= '20160430 23:59:59'
-and (
-	Declaracion.Id_Regional=1637  -- florencia
-	or Declaracion.Id_Regional=4521  -- popayan
+And Declaracion.Fecha_Radicacion >= @Fecha_Radicacion_Inicial 
+And Declaracion.Fecha_Radicacion <= @Fecha_Radicacion_Final
+--and (	Declaracion.Id_Regional=1637  -- florencia
+--	or Declaracion.Id_Regional=4521  -- popayan
 	--or Declaracion.Id_Regional=1865 --caucasia
-	) 
-and Declaracion.Tipo_Declaracion='921' -- desplazado
+--) 
+and Declaracion.Tipo_Declaracion= @Tipo_Declaracion
 --and EstadoPAARI.Descripcion is null
 and PerCount.Id_Declaracion= Declaracion.Id
 order by Declaracion.Id
-
 
 /*
 SELECT   Orders.OrderNumber, LineItems.Quantity, LineItems.Description
@@ -178,4 +159,4 @@ ON       LineItems.LineItemGUID =
          FROM    LineItems
          WHERE   OrderID = Orders.OrderID
          )
-		 */
+*/

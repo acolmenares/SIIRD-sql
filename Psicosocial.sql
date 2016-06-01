@@ -2,17 +2,17 @@ use  [IRDCOL]
 
 declare  @Tipo_Declaracion int ='921' -- desplazado
 declare  @Fecha_Valoracion_Inicial varchar(8) = '20151001'  -- 
-declare  @Fecha_Valoracion_Final varchar(8)='20160430' --
+declare  @Fecha_Valoracion_Final varchar(8)='20160531' --
 declare  @Tipo_Persona varchar(1) ='D';
 declare @PrimeraEntrega int =72
 declare @SegundaEntrega int =918
 
 select
 Declaracion.Id,
-	Declaracion.Fecha_Radicacion,
-	Declaracion.Fecha_Desplazamiento,
-	Declaracion.Fecha_Declaracion,
-	Declaracion.Fecha_Valoracion as Fecha_Atencion,
+	convert(date,Declaracion.Fecha_Radicacion) as Fecha_Radicacion,
+	convert(date,Declaracion.Fecha_Desplazamiento) as Fecha_Desplazamiento,
+	convert(date,Declaracion.Fecha_Declaracion) as Fecha_Declaracion ,
+	convert(date,Declaracion.Fecha_Valoracion) as Fecha_Atencion,
 	Fuente.Descripcion as Fuente,
 	Regional.Descripcion as Regional,
 	LF.Descripcion as MunicipioAtencion,
