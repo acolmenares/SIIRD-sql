@@ -8,7 +8,6 @@ declare @PrimeraEntrega int =72
 declare @SegundaEntrega int =918
 
 select
-
 Declaracion.Id,
 	Declaracion.Fecha_Radicacion,
 	Declaracion.Fecha_Desplazamiento,
@@ -85,8 +84,97 @@ Declaracion.Id,
 	case when VecinoSE.Id is null then '' else 'SI' end as VecinoSE,
 	case when AyudaEspiritualSE.Id is null then '' else 'SI' end as AyudaEspiritualSE,
 	case when FunSaludSE.Id is null then '' else 'SI' end as FunSaludSE,
-	case when OrgVictimasSE.Id is null then '' else 'SI' end as OrgVictimasPE,
+	case when OrgVictimasSE.Id is null then '' else 'SI' end as OrgVictimasSE,
 	---
+	case when (
+	case when MuertoPE.Dato_Usted>0 then 1 else 0 end+  case when NoDormirPE.Dato_Usted>0 then 1 else 0 end+
+	case when ApetitoPE.Dato_Usted>0 then 1 else 0 end + case when MiedoPE.Dato_Usted>0 then 1 else 0 end+
+	case when VenganzaPE.Dato_Usted>0 then 1 else 0 end + case when CulpaPE.Dato_Usted>0 then 1 else 0 end +
+	case when RelFamiPE.Dato_Usted>0 then 1 else 0 end + case when TristezaPE.Dato_Usted>0 then 1 else 0 end+
+	case when RabiaPE.Dato_Usted >0 then 1 else 0 end + case when DolorCabezaPE.Dato_Usted >0 then 1 else 0 end+
+	case when DolorEstomagoPE.Dato_Usted>0 then 1 else 0 end + case when RelComuPE.Dato_Usted >0 then 1 else 0 end +
+	case when MuertoPE.Dato_Familia>0 then 1 else 0 end+  case when NoDormirPE.Dato_Familia>0 then 1 else 0 end+
+	case when ApetitoPE.Dato_Familia>0 then 1 else 0 end + case when MiedoPE.Dato_Familia>0 then 1 else 0 end+
+	case when VenganzaPE.Dato_Familia>0 then 1 else 0 end + case when CulpaPE.Dato_Familia>0 then 1 else 0 end +
+	case when RelFamiPE.Dato_Familia>0 then 1 else 0 end + case when TristezaPE.Dato_Familia>0 then 1 else 0 end+
+	case when RabiaPE.Dato_Familia >0 then 1 else 0 end + case when DolorCabezaPE.Dato_Familia >0 then 1 else 0 end+
+	case when DolorEstomagoPE.Dato_Familia>0 then 1 else 0 end + case when RelComuPE.Dato_Familia >0 then 1 else 0 end) > 0
+	then 
+	   (
+	   (Coalesce(MuertoPE.Dato_Usted,0) + Coalesce(NoDormirPE.Dato_Usted,0) + Coalesce(ApetitoPE.Dato_Usted,0) +
+	   Coalesce(MiedoPE.Dato_Usted,0) + Coalesce(VenganzaPE.Dato_Usted,0) + Coalesce(CulpaPE.Dato_Usted,0) +
+	   Coalesce(RelFamiPE.Dato_Usted,0) + Coalesce(TristezaPE.Dato_Usted,0) + Coalesce(RabiaPE.Dato_Usted,0) +
+	   Coalesce(DolorCabezaPE.Dato_Usted,0) + Coalesce(DolorEstomagoPE.Dato_Usted,0) +	Coalesce(RelComuPE.Dato_Usted,0) +
+	   Coalesce(MuertoPE.Dato_Familia,0) +	Coalesce(NoDormirPE.Dato_Familia,0) +Coalesce(ApetitoPE.Dato_Familia,0)  +
+	   Coalesce(MiedoPE.Dato_Familia,0) +	Coalesce(VenganzaPE.Dato_Familia,0) + Coalesce(CulpaPE.Dato_Familia,0) +
+	   Coalesce(RelFamiPE.Dato_Familia,0) + Coalesce(TristezaPE.Dato_Familia,0) +	Coalesce(RabiaPE.Dato_Familia,0) +
+	   Coalesce(DolorCabezaPE.Dato_Familia,0) + Coalesce(DolorEstomagoPE.Dato_Familia,0)+Coalesce(RelComuPE.Dato_Familia,0))
+	   /
+	   (
+	    (case when MuertoPE.Dato_Usted>0 then 1.00 else 0 end+  case when NoDormirPE.Dato_Usted>0 then 1.00 else 0 end+
+		 case when ApetitoPE.Dato_Usted>0 then 1.00 else 0 end + case when MiedoPE.Dato_Usted>0 then 1.00 else 0 end+
+		 case when VenganzaPE.Dato_Usted>0 then 1.00 else 0 end + case when CulpaPE.Dato_Usted>0 then 1.00 else 0 end +
+		 case when RelFamiPE.Dato_Usted>0 then 1.00 else 0 end + case when TristezaPE.Dato_Usted>0 then 1.00 else 0 end+
+		 case when RabiaPE.Dato_Usted >0 then 1.00 else 0 end + case when DolorCabezaPE.Dato_Usted >0 then 1.00 else 0 end+
+		 case when DolorEstomagoPE.Dato_Usted>0 then 1 else 0 end + case when RelComuPE.Dato_Usted >0 then 1.00 else 0 end +
+		 case when MuertoPE.Dato_Familia>0 then 1.00 else 0 end+  case when NoDormirPE.Dato_Familia>0 then 1.00 else 0 end+
+		 case when ApetitoPE.Dato_Familia>0 then 1.00 else 0 end + case when MiedoPE.Dato_Familia>0 then 1.00 else 0 end+
+		 case when VenganzaPE.Dato_Familia>0 then 1.00 else 0 end + case when CulpaPE.Dato_Familia>0 then 1.00 else 0 end +
+		 case when RelFamiPE.Dato_Familia>0 then 1.00 else 0 end + case when TristezaPE.Dato_Familia>0 then 1.00 else 0 end+
+		 case when RabiaPE.Dato_Familia >0 then 1.00 else 0 end + case when DolorCabezaPE.Dato_Familia >0 then 1.00 else 0 end+
+		 case when DolorEstomagoPE.Dato_Familia>0 then 1.00 else 0 end + case when RelComuPE.Dato_Familia >0 then 1.00 else 0 end)*5.00
+	   )) 
+	   -
+	   (case when FamiliarPE.Id is null then 0 else 1.00 end +	case when VecinoPE.Id is null then 0 else 1.00 end +
+	    case when AyudaEspiritualPE.Id is null then 0 else 1.00 end +	case when FunSaludPE.Id is null then 0 else 1.00 end +
+	    case when OrgVictimasPE.Id is null then 0 else 1.00 end )/25.00 
+	else null end as IndicePE,
+	--
+	case when (
+	case when MuertoSE.Dato_Usted>0 then 1 else 0 end+  case when NoDormirSE.Dato_Usted>0 then 1 else 0 end+
+	case when ApetitoSE.Dato_Usted>0 then 1 else 0 end + case when MiedoSE.Dato_Usted>0 then 1 else 0 end+
+	case when VenganzaSE.Dato_Usted>0 then 1 else 0 end + case when CulpaSE.Dato_Usted>0 then 1 else 0 end +
+	case when RelFamiSE.Dato_Usted>0 then 1 else 0 end + case when TristezaSE.Dato_Usted>0 then 1 else 0 end+
+	case when RabiaSE.Dato_Usted >0 then 1 else 0 end + case when DolorCabezaSE.Dato_Usted >0 then 1 else 0 end+
+	case when DolorEstomagoSE.Dato_Usted>0 then 1 else 0 end + case when RelComuSE.Dato_Usted >0 then 1 else 0 end +
+	case when MuertoSE.Dato_Familia>0 then 1 else 0 end+  case when NoDormirSE.Dato_Familia>0 then 1 else 0 end+
+	case when ApetitoSE.Dato_Familia>0 then 1 else 0 end + case when MiedoSE.Dato_Familia>0 then 1 else 0 end+
+	case when VenganzaSE.Dato_Familia>0 then 1 else 0 end + case when CulpaSE.Dato_Familia>0 then 1 else 0 end +
+	case when RelFamiSE.Dato_Familia>0 then 1 else 0 end + case when TristezaSE.Dato_Familia>0 then 1 else 0 end+
+	case when RabiaSE.Dato_Familia >0 then 1 else 0 end + case when DolorCabezaSE.Dato_Familia >0 then 1 else 0 end+
+	case when DolorEstomagoSE.Dato_Familia>0 then 1 else 0 end + case when RelComuSE.Dato_Familia >0 then 1 else 0 end) > 0
+	then 
+	   (
+	   (Coalesce(MuertoSE.Dato_Usted,0) + Coalesce(NoDormirSE.Dato_Usted,0) + Coalesce(ApetitoSE.Dato_Usted,0) +
+	   Coalesce(MiedoSE.Dato_Usted,0) + Coalesce(VenganzaSE.Dato_Usted,0) + Coalesce(CulpaSE.Dato_Usted,0) +
+	   Coalesce(RelFamiSE.Dato_Usted,0) + Coalesce(TristezaSE.Dato_Usted,0) + Coalesce(RabiaSE.Dato_Usted,0) +
+	   Coalesce(DolorCabezaSE.Dato_Usted,0) + Coalesce(DolorEstomagoSE.Dato_Usted,0) +	Coalesce(RelComuSE.Dato_Usted,0) +
+	   Coalesce(MuertoSE.Dato_Familia,0) +	Coalesce(NoDormirSE.Dato_Familia,0) +Coalesce(ApetitoSE.Dato_Familia,0)  +
+	   Coalesce(MiedoSE.Dato_Familia,0) +	Coalesce(VenganzaSE.Dato_Familia,0) + Coalesce(CulpaSE.Dato_Familia,0) +
+	   Coalesce(RelFamiSE.Dato_Familia,0) + Coalesce(TristezaSE.Dato_Familia,0) +	Coalesce(RabiaSE.Dato_Familia,0) +
+	   Coalesce(DolorCabezaSE.Dato_Familia,0) + Coalesce(DolorEstomagoSE.Dato_Familia,0)+Coalesce(RelComuSE.Dato_Familia,0))
+	   /
+	   (
+	    (case when MuertoSE.Dato_Usted>0 then 1.00 else 0 end+  case when NoDormirSE.Dato_Usted>0 then 1.00 else 0 end+
+		 case when ApetitoSE.Dato_Usted>0 then 1.00 else 0 end + case when MiedoSE.Dato_Usted>0 then 1.00 else 0 end+
+		 case when VenganzaSE.Dato_Usted>0 then 1.00 else 0 end + case when CulpaSE.Dato_Usted>0 then 1.00 else 0 end +
+		 case when RelFamiSE.Dato_Usted>0 then 1.00 else 0 end + case when TristezaSE.Dato_Usted>0 then 1.00 else 0 end+
+		 case when RabiaSE.Dato_Usted >0 then 1.00 else 0 end + case when DolorCabezaSE.Dato_Usted >0 then 1.00 else 0 end+
+		 case when DolorEstomagoSE.Dato_Usted>0 then 1 else 0 end + case when RelComuSE.Dato_Usted >0 then 1.00 else 0 end +
+		 case when MuertoSE.Dato_Familia>0 then 1.00 else 0 end+  case when NoDormirSE.Dato_Familia>0 then 1.00 else 0 end+
+		 case when ApetitoSE.Dato_Familia>0 then 1.00 else 0 end + case when MiedoSE.Dato_Familia>0 then 1.00 else 0 end+
+		 case when VenganzaSE.Dato_Familia>0 then 1.00 else 0 end + case when CulpaSE.Dato_Familia>0 then 1.00 else 0 end +
+		 case when RelFamiSE.Dato_Familia>0 then 1.00 else 0 end + case when TristezaSE.Dato_Familia>0 then 1.00 else 0 end+
+		 case when RabiaSE.Dato_Familia >0 then 1.00 else 0 end + case when DolorCabezaSE.Dato_Familia >0 then 1.00 else 0 end+
+		 case when DolorEstomagoSE.Dato_Familia>0 then 1.00 else 0 end + case when RelComuSE.Dato_Familia >0 then 1.00 else 0 end)*5.00
+	   )) 
+	   -
+	   (case when FamiliarSE.Id is null then 0 else 1.00 end +	case when VecinoSE.Id is null then 0 else 1.00 end +
+	    case when AyudaEspiritualSE.Id is null then 0 else 1.00 end +	case when FunSaludSE.Id is null then 0 else 1.00 end +
+	    case when OrgVictimasSE.Id is null then 0 else 1.00 end )/25.00
+	else null end as IndiceSE,
+	Coalesce(ApoyoEmocional.Descripcion,'') as ApoyoEmocional
+	/*
 	Coalesce(MuertoPE.Dato_Usted,0) + Coalesce(NoDormirPE.Dato_Usted,0) + Coalesce(ApetitoPE.Dato_Usted,0) +
 	Coalesce(MiedoPE.Dato_Usted,0) + Coalesce(VenganzaPE.Dato_Usted,0) + Coalesce(CulpaPE.Dato_Usted,0) +
 	Coalesce(RelFamiPE.Dato_Usted,0) + Coalesce(TristezaPE.Dato_Usted,0) + Coalesce(RabiaPE.Dato_Usted,0) +
@@ -108,11 +196,12 @@ Declaracion.Id,
 	case when RelFamiPE.Dato_Familia>0 then 1 else 0 end + case when TristezaPE.Dato_Familia>0 then 1 else 0 end+
 	case when RabiaPE.Dato_Familia >0 then 1 else 0 end + case when DolorCabezaPE.Dato_Familia >0 then 1 else 0 end+
 	case when DolorEstomagoPE.Dato_Familia>0 then 1 else 0 end + case when RelComuPE.Dato_Familia >0 then 1 else 0 end
-
-	as cant1_pe
-
-
-	
+	as cant1_pe,
+	(case when FamiliarSE.Id is null then 0 else 1.00 end +	case when VecinoSE.Id is null then 0 else 1.00 end +
+	case when AyudaEspiritualSE.Id is null then 0 else 1.00 end +	case when FunSaludSE.Id is null then 0 else 1.00 end +
+	case when OrgVictimasSE.Id is null then 0 else 1.00 end )/25.00 as cant2_pe,
+	--
+	*/
 from 
 Declaracion
 INNER JOIN Personas ON Declaracion.Id = Personas.Id_Declaracion
@@ -141,7 +230,7 @@ left join Declaracion_Personas_Ayuda  AyudaEspiritualPE on AyudaEspiritualPE.Id_
 left join Declaracion_Personas_Ayuda  FunSaludPE on FunSaludPE.Id_Declaracion=Declaracion.Id and FunSaludPE.Id_Personas_Ayuda=4539 and FunSaludPE.Id_Tipo_Entrega=@PrimeraEntrega
 left join Declaracion_Personas_Ayuda  OrgVictimasPE on OrgVictimasPE.Id_Declaracion= Declaracion.Id and OrgVictimasPE.Id_Personas_Ayuda= 4540 and OrgVictimasPE.Id_Tipo_Entrega=@PrimeraEntrega
 ---
-left join Declaracion_Psicosocial MuertoSE on MuertoSE.Id_Declaracion=Declaracion.Id and MuertoSE.Id_Emocion=4533 and MuertoSE.Id_Tipo_Entrega=@PrimeraEntrega
+left join Declaracion_Psicosocial MuertoSE on MuertoSE.Id_Declaracion=Declaracion.Id and MuertoSE.Id_Emocion=4533 and MuertoSE.Id_Tipo_Entrega=@SegundaEntrega
 left join Declaracion_Psicosocial NoDormirSE on NoDormirSE.Id_Declaracion=Declaracion.Id and NoDormirSE.Id_Emocion=4527  and NoDormirSE.Id_Tipo_Entrega=@SegundaEntrega
 left join Declaracion_Psicosocial ApetitoSE on ApetitoSE.Id_Declaracion=Declaracion.Id and ApetitoSE.Id_Emocion=4530 and ApetitoSE.Id_Tipo_Entrega=@SegundaEntrega
 left join Declaracion_Psicosocial MiedoSE on MiedoSE.Id_Declaracion=Declaracion.Id and MiedoSE.Id_Emocion=4525 and MiedoSE.Id_Tipo_Entrega=@SegundaEntrega
@@ -158,11 +247,8 @@ left join Declaracion_Personas_Ayuda  VecinoSE on VecinoSE.Id_Declaracion= Decla
 left join Declaracion_Personas_Ayuda  AyudaEspiritualSE on AyudaEspiritualSE.Id_Declaracion=Declaracion.Id and AyudaEspiritualSE.Id_Personas_Ayuda=4538 and AyudaEspiritualSE.Id_Tipo_Entrega=@SegundaEntrega
 left join Declaracion_Personas_Ayuda  FunSaludSE on FunSaludSE.Id_Declaracion=Declaracion.Id and FunSaludSE.Id_Personas_Ayuda=4539 and FunSaludSE.Id_Tipo_Entrega=@SegundaEntrega
 left join Declaracion_Personas_Ayuda  OrgVictimasSE on OrgVictimasSE.Id_Declaracion= Declaracion.Id and OrgVictimasSE.Id_Personas_Ayuda= 4540 and OrgVictimasSE.Id_Tipo_Entrega=@SegundaEntrega
----
-
-
-
---left join Declaracion_Psicosocial  on .Id_Declaracion=Declaracion.Id and .Id_Emocion=
+left join Declaracion_Seguimientos ds on ds.Id_Declaracion= Declaracion.id and ds.Id_Tipo_Entrega=@SegundaEntrega
+left join Subtablas ApoyoEmocional on ApoyoEmocional.Id= ds.Id_Apoyo_Emocional
 ,
 (
   select per.Id_Declaracion, count(per.Id)  as TotalFamilia,
