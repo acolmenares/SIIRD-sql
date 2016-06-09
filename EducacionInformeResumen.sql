@@ -44,30 +44,14 @@ from
 select 
     q.*,    
 	case when 
-	      q.SEG_Remitir=1
-		  and
-		  (
-		    (q.Estudia_SE ='Si' and q.Certificado_SE='Si' and q.Municipio_SE=q.MunicipioAtencion)
-			or
-			(q.Estudia_SEG='Si' and (q.Certificado_SEG='Si' or q.Verificado_SEG='Si' ) and q.Municipio_SEG=q.MunicipioAtencion)
-		  )
-		  then 1 else 0 end   as SEG_Estudian_MA_CV,
-	case when 
-	      q.SEG_Remitir=1
-		  and
-		  (
-		    (q.Estudia_SE ='Si' and q.Certificado_SE='Si' and not q.Municipio_SE=q.MunicipioAtencion)
-			or
-			(q.Estudia_SEG='Si' and (q.Certificado_SEG='Si' or q.Verificado_SEG='Si' ) and not q.Municipio_SEG=q.MunicipioAtencion)
-		  )
-		  then 1 else 0 end   as SEG_Estudian_OM_CV,
-	case when 
-	      q.SEG_Remitir=1
-		  and
-		  (
-		    q.Graduado_SE='Si' or q.Graduado_SEG='Si'
-		  )
-		  then 1 else 0 end   as SEG_Graduados
+	(q.SEG_Remitir=1 and q.Estudia_SF='Si'  and q.Cer_Ver_SF='Si' and q.Municipio_SF=q.MunicipioAtencion)
+	    then 1 else 0 end   as SEG_Estudian_MA_CV,
+    case when 
+	(q.SEG_Remitir=1 and q.Estudia_SF='Si'  and q.Cer_Ver_SF='Si' and not q.Municipio_SF=q.MunicipioAtencion)
+	    then 1 else 0 end   as SEG_Estudian_OM_CV,
+    case when 
+	(q.SEG_Remitir=1 and q.Graduado_SF='Si')
+	    then 1 else 0 end   as SEG_Graduados
 	
 from
 (

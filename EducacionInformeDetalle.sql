@@ -21,8 +21,17 @@ set @FechaAtencionFinal='20160531'
 set @FechaCorte=@FechaAtencionFinal
 
 select 
-    q.*,    
+    q.*,
 	case when 
+	(q.SEG_Remitir=1 and q.Estudia_SF='Si'  and q.Cer_Ver_SF='Si' and q.Municipio_SF=q.MunicipioAtencion)
+	    then 1 else 0 end   as SEG_Estudian_MA_CV,
+    case when 
+	(q.SEG_Remitir=1 and q.Estudia_SF='Si'  and q.Cer_Ver_SF='Si' and not q.Municipio_SF=q.MunicipioAtencion)
+	    then 1 else 0 end   as SEG_Estudian_OM_CV,
+    case when 
+	(q.SEG_Remitir=1 and q.Graduado_SF='Si')
+	    then 1 else 0 end   as SEG_Graduados
+	/*case when 
 	      q.SEG_Remitir=1
 		  and
 		  (
@@ -47,7 +56,7 @@ select
 		    q.Graduado_SE='Si' or q.Graduado_SEG='Si'
 		  )
 		  then 1 else 0 end   as SEG_Graduados
-	
+	*/
 from
 (
 select
