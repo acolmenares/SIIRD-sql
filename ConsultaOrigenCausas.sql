@@ -1,51 +1,49 @@
 use IRDCOL
 declare  @Fecha_Radicacion_Inicial varchar(8) = '20151001';
 declare  @Fecha_Radicacion_Final varchar(8) = '20160630';
-declare  @Tipo_Declarante varchar(10) = 'Desplazado'   -- 921  --desplazado
+declare  @Tipo_Declaracion int = 921  --desplazado
 declare  @Tipo_Persona varchar(1) ='D';  --declarante
 declare  @SegundaEntrega int = 918
-select declaracion.*,
-Coalesce(ObtencionAgua.Descripcion,'') as ObtencionAgua,
-Coalesce(CausasDesplazamiento.Descripcion,'') as CausasDesplazamiento,
-Coalesce(FuenteIngresos.Descripcion,'') as FuenteIngresos,
-Coalesce(DaniosFamilia.Descripcion, '') as DaniosFamila,
-Coalesce(PersonasAyudaHablar.Descripcion, '') as PersonasAyudaHablar,
-Coalesce(BienesPerdio.Descripcion,'') as BienesPerdio
- from (
+
+select --CONVERT(CHAR(6),dd.Fecha_Radicacion,112), dd.Departamento, count(dd.id)
+    --sdoa.Descripcion, count(dd.id)
+	dd.CuantasVecesDesplazado, count(dd.id)
+from 
+(
+
 SELECT     
 	Declaracion.Id,
-	Declaracion.Fecha_Radicacion as FechaRadicacion,
-	Declaracion.Fecha_Desplazamiento as FechaDesplazamiento,
-	Declaracion.Fecha_Declaracion FechaDeclaracion ,
-	Declaracion.Fecha_Valoracion as FechaAtencion,
+	convert(date,Declaracion.Fecha_Radicacion) as Fecha_Radicacion,
+	convert(date,Declaracion.Fecha_Desplazamiento) as Fecha_Desplazamiento,
+	convert(date,Declaracion.Fecha_Declaracion) as Fecha_Declaracion ,
+	convert(date,Declaracion.Fecha_Valoracion) as Fecha_Atencion,
 	Declaracion.Horario,
-	Coalesce(Grupo.Descripcion,'') as Grupo,
+	Grupo.Descripcion as Grupo,
 	Fuente.Descripcion as Fuente,
 	Regional.Descripcion as Regional,
 	LF.Descripcion as MunicipioAtencion,
 	TipoDeclaracion.Descripcion as TipoDeclarante,
 	EnLinea.Descripcion as EnLinea,
-	Coalesce(Atendido.Descripcion,'')  as Atendido,
-	Personas.Tipo as TipoPersona,
+	Atendido.Descripcion as Atendido,
 	Personas.Primer_Apellido,
 	Personas.Segundo_Apellido,
 	Personas.Primer_Nombre,
 	Personas.Segundo_Nombre,
 	TI.Descripcion as TI,
 	Personas.Identificacion,
-	Celular.Descripcion as Celular,
-	Telefono.Descripcion as Telefono,
-	Direccion.Descripcion as Direccion,
-	Barrio.Descripcion Barrio,
+	Coalesce( Celular.Descripcion,'') as Celular,
+	Coalesce( Telefono.Descripcion,'') as Telefono,
+	Coalesce(Direccion.Descripcion,'') as Direccion,
+	Coalesce(Barrio.Descripcion,'') as Barrio,
 	Personas.Edad,
-	Personas.Fecha_Nacimiento as FechaNacimiento,
+	convert(date,Personas.Fecha_Nacimiento) as Fecha_Nacimiento,
 	Generos.Descripcion as Genero,
 	Etnias.Descripcion as Etnia,
-	Declaracion.Gestantes as Gestantes,
+	Coalesce(Declaracion.Gestantes,0) as Gestantes,
 	Coalesce( Declaracion.Menores_Ninas,0)  + Coalesce(Declaracion.Menores_Ninos,0) as Menores,
-	Coalesce(Declaracion.Recien_Nacidos,0) as RecienNacidos,
+	Coalesce(Declaracion.Recien_Nacidos,0) as Recien_Nacidos,
 	Coalesce(Declaracion.Lactantes,0) as Lactantes,
-	Coalesce(Declaracion.Resto_Nucleo,0) as RestoNucleo,
+	Coalesce(Declaracion.Resto_Nucleo,0) as Resto_Nucleo,
 	Coalesce(Declaracion.Gestantes,0)
 	+ Coalesce( Declaracion.Menores_Ninas,0)  + Coalesce(Declaracion.Menores_Ninos,0) 
 	+ Coalesce(Declaracion.Recien_Nacidos,0) 
@@ -53,39 +51,39 @@ SELECT
 	+ Coalesce(Declaracion.Resto_Nucleo,0) as TFE,
 	PerCount.TotalFamilia as TFR,
 	Coalesce(NoAtencion.Descripcion,'') as MotivoNoAtencion,
-	TipoTenencia.Descripcion as TipoTenencia,
-	Habitaciones.Descripcion as Habitaciones,
-	PerVivienda.Descripcion as PersonasVivienda,
-	PerHabitacion.Descripcion as PersonasHabitacion,
-	MaterialVivienda.Descripcion as MaterialesVivienda,
+	Coalesce(TipoTenencia.Descripcion,'') as TipoTenencia,
+	Coalesce(Habitaciones.Descripcion,'') as Habitaciones,
+	Coalesce(PerVivienda.Descripcion,'') as PersonasVivienda,
+	Coalesce(PerHabitacion.Descripcion,'') as PersonasHabitacion,
+	Coalesce(MaterialVivienda.Descripcion,'') as MaterialesVivienda,
 	Coalesce(AguaPotable.Descripcion,'') as AguaPotable,
-	--'' as ObtencionAgua,   --Coalesce(ObtencionAgua.Descripcion,'') as ObtencionAgua,
-	TipoDesplazamiento.Descripcion as TipoDesplazamiento,
-	Departamento.Descripcion as Departamento,
-	Municipio.Descripcion as Municipio,
-	Concejo.Descripcion as ConcejoResguardo,
-	Declaracion.Vereda_Desplazamiento as Vereda,
-	CuantasVecesDesplazado.Descripcion as CuantasVecesDesplazado,
+	Coalesce(ObtencionAgua.Descripcion,'') as ObtencionAgua,
+	Coalesce(TipoDesplazamiento.Descripcion,'') as TipoDesplazamiento,
+	Coalesce(Departamento.Descripcion,'') as Departamento,
+	Coalesce(Municipio.Descripcion,'') as Municipio,
+	Coalesce(Concejo.Descripcion,'') as ConcejoResguardo,
+	Coalesce(Declaracion.Vereda_Desplazamiento ,'') as Vereda,
+	Coalesce(CuantasVecesDesplazado.Descripcion,'') as CuantasVecesDesplazado,
 	Coalesce(HaDeclaradoAntes.Descripcion,'') as HaDeclaradoAntes,
-    Declaracion.Fecha_Desplazamiento_Anterior as FechaDesplazamientoAnterior,
-	Declaracion.Lugar_Desplazamiento as LugarDesplazamientoAntes,
+    convert(date,Declaracion.Fecha_Desplazamiento_Anterior) as FechaDesplazamientoAnterior,
+	Coalesce(Declaracion.Lugar_Desplazamiento,'') as LugarDesplazamientoAntes,
 	Coalesce(HaRegresado.Descripcion,'') as HaRegresado,
-	--'' as CausasDesplazamiento, --Coalesce(CausasDesplazamiento.Descripcion,'') as CausasDesplazamiento,
-	TiempoEnDeclarar.Descripcion as TiempoEnDeclarar,
-	PorqueTardoEnDeclarar.Descripcion as PorqueTardoEnDeclarar,
+	Coalesce(CausasDesplazamiento.Descripcion,'') as CausasDesplazamiento,
+	Coalesce(TiempoEnDeclarar.Descripcion,'') as TiempoEnDeclarar,
+	Coalesce(PorqueTardoEnDeclarar.Descripcion,'') as PorqueTardoEnDeclarar,
 	Coalesce(EsDelMunicipio.Descripcion,'') as EsDelMunicipio,
-	PorqueNoDeclaroEnMunicipio.Descripcion as PorqueNoDeclaroEnMunicipio,
+	Coalesce(PorqueNoDeclaroEnMunicipio.Descripcion,'') as PorqueNoDeclaroEnMunicipio,
 	Coalesce(AddFamiliasAccion.Descripcion,'') as ADDFamiliasAccion,
-	MunicipioFamiliasAccion.Descripcion as MunicipioFamiliasAccion,
-	AddUnidos.Descripcion as ADDUnidos,
-	Declaracion.Municipio_Unidos as MunicipioUnidos,
+	Coalesce(MunicipioFamiliasAccion.Descripcion,'') as MunicipioFamiliasAccion,
+	Coalesce(AddUnidos.Descripcion,'') as ADDUnidos,
+	Coalesce(Declaracion.Municipio_Unidos,'') as MunicipioUnidos,
 	Coalesce(SolicitoAyuda.Descripcion,'') as SolicitoAyuda,
-	EntidadInicial.Descripcion as EntidadInicial,
-	ComoFueAtencion.Descripcion as ComoFueAtencion,
-	--'' as  FuenteIngresos, --Coalesce(FuenteIngresos.Descripcion,'') as FuenteIngresos,
-	Declaracion.Promedio_Ingresos_Mensuales as PromedioIngresos,
-	--'' as DaniosFamila, --Coalesce(DaniosFamilia.Descripcion, '') as DaniosFamila,
-	Coalesce(VBGGeneral.Descripcion,'') as VBGGeneral,
+	Coalesce(EntidadInicial.Descripcion,'') as EntidadInicial,
+	Coalesce(ComoFueAtencion.Descripcion,'') as ComoFueAtencion,
+	Coalesce(FuenteIngresos.Descripcion,'') as FuenteIngresos,
+	Coalesce(Declaracion.Promedio_Ingresos_Mensuales,0) as PromedioIngresos,
+	Coalesce(DaniosFamilia.Descripcion, '') as DaniosFamila,
+	Coalesce(VBGGeneral.Descripcion, '') as VBGGeneral,
 	Coalesce(Declaracion.VBG_General_Agresor,'') as VBGGeneralAgresor,
 	Coalesce(AddMuerto.Descripcion,'') as ADDMuerto,
 	Coalesce(DddMuerto.Descripcion,'') as DDDMuerto,
@@ -95,18 +93,19 @@ SELECT
 	Coalesce(AtencionPsicosocial.Descripcion,'') as AtencionPsicosocial,
 	Coalesce(HaAfectadoDesplazamiento.Descripcion,'') as HaAfectadoDesplazamiento,
 	Coalesce(AyudaHablar.Descripcion,'') as AyudaHablar,
-	--'' as PersonasAyudaHablar, --Coalesce(PersonasAyudaHablar.Descripcion, '') as PersonasAyudaHablar,
+	Coalesce(PersonasAyudaHablar.Descripcion, '') as PersonasAyudaHablar,
 	Coalesce(Adiccion.Descripcion,'') as Adiccion,
 	Coalesce(AdiccionAlcohol.Descripcion,'') as AdiccionAlcohol,
 	Coalesce(AdiccionDroga.Descripcion,'') as AdiccionDroga,
-	--'' as  BienesPerdio, --Coalesce(BienesPerdio.Descripcion,'') as BienesPerdio,
-	TipoBienRural.Descripcion as TipoBienRural,
-	DocumentoPropiedad.Descripcion as DocumentoPropiedad,
+	Coalesce(BienesPerdio.Descripcion,'') as BienesPerdio,
+	Coalesce(TipoBienRural.Descripcion,'') as TipoBienRural,
+	Coalesce(DocumentoPropiedad.Descripcion,'') as DocumentoPropiedad,
 	Coalesce(CopiaDocumento.Descripcion,'') as CopiaDocumento,
-	DestinoTierra.Descripcion as DestinoTierra,
-	SituacionActual.Descripcion as SituacionActual,
+	Coalesce(DestinoTierra.Descripcion,'') as DestinoTierra,
+	Coalesce(SituacionActual.Descripcion,'') as SituacionActual,
+	/* */
 	Coalesce(ApoyoEmocional.Descripcion,'') as ApoyoEmocional
-	
+	/* */
 	FROM       Declaracion 
 INNER JOIN Personas ON Declaracion.Id = Personas.Id_Declaracion
 left join SubTablas Grupo on Grupo.Id= Declaracion.Id_Grupo 
@@ -155,7 +154,7 @@ left join SubTablas PerVivienda on PerVivienda.Id = Declaracion.Id_Cuantas_Perso
 left join SubTablas PerHabitacion on PerHabitacion.Id= Declaracion.Id_Cuantas_Personas_Habitacion
 left join SubTablas MaterialVivienda on MaterialVivienda.Id = Declaracion.Id_Materiales_Vivienda
 left join SubTablas AguaPotable on AguaPotable.Id= Declaracion.Id_Agua_Potable
-/*left join (
+left join (
 select distinct(Id_Declaracion), 
 ( SELECT Stuff(
   (SELECT N'- ' + tt1.Descripcion from 
@@ -167,7 +166,7 @@ select distinct(Id_Declaracion),
   ) as tt1 FOR XML PATH(''),TYPE)
   .value('text()[1]','nvarchar(max)'),1,2,N'') as Decripcion ) as Descripcion
 from Declaracion_Obtencion_Agua 
-) ObtencionAgua  on ObtencionAgua.Id_Declaracion=Declaracion.id */
+) ObtencionAgua  on ObtencionAgua.Id_Declaracion=Declaracion.id
 left join SubTablas TipoDesplazamiento on TipoDesplazamiento.Id= Declaracion.Id_Forma_Declaracion
 left join SubTablas Departamento on Departamento.Id= Declaracion.Id_Departamento_Expulsor
 left join SubTablas Municipio on Municipio.Id = Declaracion.Id_Municipio_Expulsor
@@ -175,7 +174,7 @@ left join SubTablas Concejo on Concejo.Id  = Declaracion.Id_Concejo_Expulsor
 left join SubTablas CuantasVecesDesplazado on CuantasVecesDesplazado.Id= Declaracion.Id_Cuantos_Desplazamientos
 left join SubTablas HaDeclaradoAntes on HaDeclaradoAntes.Id= Declaracion.Id_Ha_Declarado_Antes
 left join SubTablas HaRegresado on HaRegresado.Id= Declaracion.Id_Ha_Regresado
-/*left join (
+left join (
 select distinct(Id_Declaracion), 
 ( SELECT Stuff(
   (SELECT N'- ' + tt1.Descripcion from 
@@ -187,7 +186,7 @@ select distinct(Id_Declaracion),
   ) as tt1 FOR XML PATH(''),TYPE)
   .value('text()[1]','nvarchar(max)'),1,2,N'') as Decripcion ) as Descripcion
 from Declaracion_Causas_Desplazamiento
-) CausasDesplazamiento  on CausasDesplazamiento.Id_Declaracion=Declaracion.id */
+) CausasDesplazamiento  on CausasDesplazamiento.Id_Declaracion=Declaracion.id
 left join SubTablas TiempoEnDeclarar on TiempoEnDeclarar.Id= Declaracion.Id_Cuanto_Tiempo_Demoro
 left join SubTablas PorqueTardoEnDeclarar on PorqueTardoEnDeclarar.Id= Declaracion.Id_Motivo_Demora
 left join SubTablas EsDelMunicipio on EsDelMunicipio.Id= Declaracion.Id_Es_Del_Municipio
@@ -198,7 +197,7 @@ left join SubTablas AddUnidos on AddUnidos.Id = Declaracion.Id_Red_Unidos
 left join SubTablas SolicitoAyuda on SolicitoAyuda.Id= Declaracion.Id_Solicito_ayuda
 left join SubTablas EntidadInicial on EntidadInicial.Id = Declaracion.Id_Entidad_Inicial_Atencion
 left join SubTablas ComoFueAtencion on ComoFueAtencion.Id=Declaracion.Id_Como_Fue_Atencion
-/*left join (
+left join (
 select distinct(Id_Declaracion), 
 ( SELECT Stuff(
   (SELECT N'- ' + tt1.Descripcion from 
@@ -210,9 +209,9 @@ select distinct(Id_Declaracion),
   ) as tt1 FOR XML PATH(''),TYPE)
   .value('text()[1]','nvarchar(max)'),1,2,N'') as Decripcion ) as Descripcion
 from Declaracion_Fuentes_Ingreso
-) FuenteIngresos  on FuenteIngresos.Id_Declaracion=Declaracion.id */
+) FuenteIngresos  on FuenteIngresos.Id_Declaracion=Declaracion.id
 --
-/*left join (
+left join (
 select distinct(Id_Declaracion), 
 ( SELECT Stuff(
   (SELECT N'- ' + tt1.Descripcion from 
@@ -224,7 +223,7 @@ select distinct(Id_Declaracion),
   ) as tt1 FOR XML PATH(''),TYPE)
   .value('text()[1]','nvarchar(max)'),1,2,N'') as Decripcion ) as Descripcion
 from Declaracion_Danos_Familia
-) DaniosFamilia  on DaniosFamilia.Id_Declaracion=Declaracion.id*/
+) DaniosFamilia  on DaniosFamilia.Id_Declaracion=Declaracion.id
 --
 left join SubTablas VBGGeneral on VBGGeneral.Id = Declaracion.Id_VBG_general 
 
@@ -239,74 +238,6 @@ left join SubTablas AyudaHablar on AyudaHablar.Id = Declaracion.Id_Emociones
 left join SubTablas Adiccion on Adiccion.Id = Declaracion.Id_Tipo_Adiccion
 left join SubTablas AdiccionAlcohol on AdiccionAlcohol.Id= Declaracion.Id_Adiccion_Alcohol
 left join SubTablas AdiccionDroga on AdiccionDroga.Id= Declaracion.Id_Adiccion_Droga
-/*left join (
-select distinct(Id_Declaracion), 
-( SELECT Stuff(
-  (SELECT N'- ' + tt1.Descripcion from 
-  (
-  select sdoa.Descripcion
-  from Declaracion_Personas_Ayuda doa
-  left join SubTablas sdoa on sdoa.Id = doa.Id_Personas_Ayuda
-  where doa.Id_Declaracion = Declaracion_Personas_Ayuda.Id_Declaracion
-  ) as tt1 FOR XML PATH(''),TYPE)
-  .value('text()[1]','nvarchar(max)'),1,2,N'') as Decripcion ) as Descripcion
-from Declaracion_Personas_Ayuda
-) PersonasAyudaHablar  on PersonasAyudaHablar.Id_Declaracion=Declaracion.id*/
----
-/*left join (
-select distinct(Id_Declaracion), 
-( SELECT Stuff(
-  (SELECT N'- ' + tt1.Descripcion from 
-  (
-  select sdoa.Descripcion
-  from Declaracion_Bienes doa
-  left join SubTablas sdoa on sdoa.Id = doa.Id_Bienes
-  where doa.Id_Declaracion = Declaracion_Bienes.Id_Declaracion
-  ) as tt1 FOR XML PATH(''),TYPE)
-  .value('text()[1]','nvarchar(max)'),1,2,N'') as Decripcion ) as Descripcion
-from Declaracion_Bienes
-) BienesPerdio  on BienesPerdio.Id_Declaracion=Declaracion.id */
----
-left join SubTablas  TipoBienRural on TipoBienRural.Id=Declaracion.Id_Tipo_Bien_Rural
-left join SubTablas DocumentoPropiedad on DocumentoPropiedad.Id= Declaracion.Id_Documento_Propiedad
-left join SubTablas CopiaDocumento on  CopiaDocumento.Id= Declaracion.Id_Tiene_Documento
-left join SubTablas DestinoTierra on DestinoTierra.Id= Declaracion.Id_Destino_Tierra
-left join SubTablas SituacionActual on SituacionActual.Id= Declaracion.Id_Situacion_Actual_Tierras
-left join Subtablas ApoyoEmocional on ApoyoEmocional.Id= ds.Id_Apoyo_Emocional
-,
-(
-  select per.Id_Declaracion, count(per.Id)  as TotalFamilia,
-   sum( case when (per.Edad>=0 and per.Edad<=5) then 1 else 0 end) as Ninos05,
-   sum( case when (per.Edad>=6 and per.Edad<=17) then 1 else 0 end) as Ninos617
-  from Personas per group by per.Id_Declaracion
-) as PerCount  
-where PerCount.Id_Declaracion= Declaracion.Id
-/*
-WHERE
-Declaracion.Fecha_Radicacion >= @Fecha_Radicacion_Inicial
-And Declaracion.Fecha_Radicacion <= @Fecha_Radicacion_Final
-and Personas.Tipo = @Tipo_Persona
-AND Declaracion.Tipo_Declaracion = @Tipo_Declaracion
-and PerCount.Id_Declaracion= Declaracion.Id
-order by Declaracion.Id
-*/
-) declaracion 
-
-
-left join (
-select distinct(Id_Declaracion), 
-( SELECT Stuff(
-  (SELECT N'- ' + tt1.Descripcion from 
-  (
-  select sdoa.Descripcion
-  from Declaracion_Bienes doa
-  left join SubTablas sdoa on sdoa.Id = doa.Id_Bienes
-  where doa.Id_Declaracion = Declaracion_Bienes.Id_Declaracion
-  ) as tt1 FOR XML PATH(''),TYPE)
-  .value('text()[1]','nvarchar(max)'),1,2,N'') as Decripcion ) as Descripcion
-from Declaracion_Bienes
-) BienesPerdio  on BienesPerdio.Id_Declaracion=Declaracion.id
-
 left join (
 select distinct(Id_Declaracion), 
 ( SELECT Stuff(
@@ -320,66 +251,45 @@ select distinct(Id_Declaracion),
   .value('text()[1]','nvarchar(max)'),1,2,N'') as Decripcion ) as Descripcion
 from Declaracion_Personas_Ayuda
 ) PersonasAyudaHablar  on PersonasAyudaHablar.Id_Declaracion=Declaracion.id
-
+---
 left join (
 select distinct(Id_Declaracion), 
 ( SELECT Stuff(
   (SELECT N'- ' + tt1.Descripcion from 
   (
   select sdoa.Descripcion
-  from Declaracion_Danos_Familia doa
-  left join SubTablas sdoa on sdoa.Id = doa.Id_Danos_Familia
-  where doa.Id_Declaracion = Declaracion_Danos_Familia.Id_Declaracion
+  from Declaracion_Bienes doa
+  left join SubTablas sdoa on sdoa.Id = doa.Id_Bienes
+  where doa.Id_Declaracion = Declaracion_Bienes.Id_Declaracion
   ) as tt1 FOR XML PATH(''),TYPE)
   .value('text()[1]','nvarchar(max)'),1,2,N'') as Decripcion ) as Descripcion
-from Declaracion_Danos_Familia
-) DaniosFamilia  on DaniosFamilia.Id_Declaracion=Declaracion.id
+from Declaracion_Bienes
+) BienesPerdio  on BienesPerdio.Id_Declaracion=Declaracion.id
+---
+left join SubTablas  TipoBienRural on TipoBienRural.Id=Declaracion.Id_Tipo_Bien_Rural
+left join SubTablas DocumentoPropiedad on DocumentoPropiedad.Id= Declaracion.Id_Documento_Propiedad
+left join SubTablas CopiaDocumento on  CopiaDocumento.Id= Declaracion.Id_Tiene_Documento
+left join SubTablas DestinoTierra on DestinoTierra.Id= Declaracion.Id_Destino_Tierra
+left join SubTablas SituacionActual on SituacionActual.Id= Declaracion.Id_Situacion_Actual_Tierras
+left join Subtablas ApoyoEmocional on ApoyoEmocional.Id= ds.Id_Apoyo_Emocional,
+(
+  select per.Id_Declaracion, count(per.Id)  as TotalFamilia,
+   sum( case when (per.Edad>=0 and per.Edad<=5) then 1 else 0 end) as Ninos05,
+   sum( case when (per.Edad>=6 and per.Edad<=17) then 1 else 0 end) as Ninos617
+  from Personas per group by per.Id_Declaracion
+) as PerCount 
+WHERE     (Personas.Tipo = @Tipo_Persona)  
+And Declaracion.Fecha_Radicacion >= @Fecha_Radicacion_Inicial
+And Declaracion.Fecha_Radicacion <= @Fecha_Radicacion_Final
+AND Declaracion.Tipo_Declaracion = @Tipo_Declaracion
+and PerCount.Id_Declaracion= Declaracion.Id
+--order by Declaracion.Id
+) dd 
+  --left join Declaracion_Causas_Desplazamiento doa
+  --on doa.Id_Declaracion = dd.Id
+  --left join SubTablas sdoa on sdoa.Id = doa.Id_Causa_Desplazamiento
+  
 
-left join (
-select distinct(Id_Declaracion), 
-( SELECT Stuff(
-  (SELECT N'- ' + tt1.Descripcion from 
-  (
-  select sdoa.Descripcion
-  from Declaracion_Fuentes_Ingreso doa
-  left join SubTablas sdoa on sdoa.Id = doa.Id_Fuentes_Ingreso
-  where doa.Id_Declaracion = Declaracion_Fuentes_Ingreso.Id_Declaracion
-  ) as tt1 FOR XML PATH(''),TYPE)
-  .value('text()[1]','nvarchar(max)'),1,2,N'') as Decripcion ) as Descripcion
-from Declaracion_Fuentes_Ingreso
-) FuenteIngresos  on FuenteIngresos.Id_Declaracion=Declaracion.id
-
-left join (
-select distinct(Id_Declaracion), 
-( SELECT Stuff(
-  (SELECT N'- ' + tt1.Descripcion from 
-  (
-  select sdoa.Descripcion
-  from Declaracion_Obtencion_Agua doa
-  left join SubTablas sdoa on sdoa.Id = doa.Id_Lugar_Agua
-  where doa.Id_Declaracion = Declaracion_Obtencion_Agua.Id_Declaracion
-  ) as tt1 FOR XML PATH(''),TYPE)
-  .value('text()[1]','nvarchar(max)'),1,2,N'') as Decripcion ) as Descripcion
-from Declaracion_Obtencion_Agua 
-) ObtencionAgua  on ObtencionAgua.Id_Declaracion=Declaracion.id
-
-left join (
-select distinct(Id_Declaracion), 
-( SELECT Stuff(
-  (SELECT N'- ' + tt1.Descripcion from 
-  (
-  select sdoa.Descripcion
-  from Declaracion_Causas_Desplazamiento doa
-  left join SubTablas sdoa on sdoa.Id = doa.Id_Causa_Desplazamiento
-  where doa.Id_Declaracion = Declaracion_Causas_Desplazamiento.Id_Declaracion
-  ) as tt1 FOR XML PATH(''),TYPE)
-  .value('text()[1]','nvarchar(max)'),1,2,N'') as Decripcion ) as Descripcion
-from Declaracion_Causas_Desplazamiento
-) CausasDesplazamiento  on CausasDesplazamiento.Id_Declaracion=Declaracion.id
-
-WHERE
-Declaracion.FechaRadicacion >= @Fecha_Radicacion_Inicial
-And Declaracion.FechaRadicacion <= @Fecha_Radicacion_Final
-and Declaracion.TipoPersona = @Tipo_Persona
-AND Declaracion.TipoDeclarante = @Tipo_Declarante
---and PerCount.Id_Declaracion= Declaracion.Id
+group by --CONVERT(CHAR(6),dd.Fecha_Radicacion,112),  dd.Departamento
+         --sdoa.Descripcion
+		 dd.CuantasVecesDesplazado

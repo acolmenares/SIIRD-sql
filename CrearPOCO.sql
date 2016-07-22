@@ -1,3 +1,5 @@
+//https://gist.github.com/evgeny-myasishchev/8711676
+
 USE IRDCOL
 
 DECLARE @tableName NVARCHAR(MAX), @schemaName NVARCHAR(MAX), @className NVARCHAR(MAX)
