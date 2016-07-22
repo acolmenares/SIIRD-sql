@@ -14,6 +14,12 @@ declare  @Id_NO int = 20
 declare @PrimeraEntrega int =72
 declare @SegundaEntrega int =918
 
+select r.Regional, CONVERT(CHAR(6), r.FechaSegundaEntrega,112),
+sum ( case when 
+                r.AsistioSegundaEntrega='Si' or 0=0 then 1 else 0 end ) --and  CONVERT(CHAR(6), r.Fecha_Radicacion,112)= CONVERT(CHAR(6), r.FechaSegundaEntrega,112)
+
+from  
+(
 select 
     Declaracion.Id,
 	convert(date,Declaracion.Fecha_Radicacion) as Fecha_Radicacion,
@@ -43,19 +49,22 @@ select
 	+ Coalesce(Declaracion.Lactantes,0)
 	+ Coalesce(Declaracion.Resto_Nucleo,0) as TFE,
 	PerCount.TotalFamilia as TFR,
-	Coalesce(Elegible.Descripcion,'') as Elegible,
-	convert(date,DElegible.Fecha) as FechaElegible,
+	Coalesce(Elegible.Descripcion,'') as  Elegibilidad,
+	convert(date,DElegible.Fecha) as FechaElegibilidad,
 	Coalesce(Contactado.Descripcion,'') as Contactado,
 	convert(date,DContactado.Fecha) as FechaContactado,
 	Coalesce(Programado.Descripcion,'') as Programado,
 	convert(date,DProgramado.Fecha) as FechaProgramado,
-	convert(date,ProgramacionSegunda.Fecha) as FechaSegundaEntrega,
-	Coalesce(ProgramadoSegunda.Descripcion,'') as AsistioSegundaEntrega,
 	Coalesce(ReProgramado.Descripcion,'') as ReProgramado,
 	convert(date,DReProgramado.Fecha) as FechaReProgramado,
 	Atendido.Descripcion as Atendido,
 	Coalesce(NoAtencion.Descripcion,'') as MotivoNoAtencion,
-	Coalesce(TipoReProgramacion.Descripcion,'') as TipoReprogramacion
+	Coalesce(TipoReProgramacion.Descripcion,'') as TipoReprogramacion,
+    --convert(date, DSegunda.Fecha) as FechaSegundaEntrega,
+	convert(date, ProgramacionSegunda.Fecha) as FechaSegundaEntrega,
+	coalesce(DSegundaAsistio.Descripcion,'') as AsistioSegundaEntrega	
+	--ProgramacionSegunda.Numero,
+	--GrupoSegunda.Descripcion
 
 from Declaracion
 INNER JOIN Personas ON Declaracion.Id = Personas.Id_Declaracion
@@ -121,17 +130,6 @@ left join Declaracion_Estados DProgramado on DProgramado.Id=(
 )
 left join SubTablas Programado on Programado.Id= DProgramado.Id_Como_Estado
 
----
-left join Declaracion_Estados DProgramadoSegunda on DProgramadoSegunda.Id=(
-  select top 1 Declaracion_Estados.Id from  Declaracion_Estados  
-  join Programacion on Programacion.Id=Declaracion_Estados.Id_Programa and Programacion.Id_TipoEntrega=@SegundaEntrega
-  where Declaracion_Estados.Id_Declaracion=Declaracion.Id
-  and Declaracion_Estados.Id_Tipo_Estado=@Id_Programado 
-  order by Declaracion_Estados.Fecha desc, Declaracion_Estados.Id desc
-)
-left join SubTablas ProgramadoSegunda on ProgramadoSegunda.Id= DProgramadoSegunda.Id_Como_Estado
-left join Programacion ProgramacionSegunda on ProgramacionSegunda.Id = DProgramadoSegunda.Id_Programa
----
 
 
 left join Declaracion_Estados DReProgramado on DReProgramado.Id=(
@@ -152,6 +150,21 @@ left join Declaracion_Estados DTipoReProgramacion on DTipoReProgramacion.Id=(
 )
 left join Programacion pr on pr.Id= DTipoReProgramacion.Id_Programa
 left join SubTablas TipoReProgramacion on TipoReProgramacion.Id= pr.Id_TipoEntrega
+
+-- Fecha Segunda Entrega y si asistio ..
+-- tomar la fecha del grupo no del estado !!!!! 
+left join Declaracion_Estados DSEgunda on DSEgunda.Id=(
+   select top 1 Declaracion_estados.Id 
+     from Declaracion_Estados 
+	    join Programacion pr on pr.Id=Declaracion_Estados.Id_Programa and pr.Id_TipoEntrega=@SegundaEntrega
+     where Declaracion_Estados.Id_Declaracion=Declaracion.Id
+     and  Declaracion_Estados.Id_Tipo_Estado in (@Id_Programado, @Id_ReProgramado) 
+	 order by pr.Fecha desc, Declaracion_Estados.Id desc
+)
+left join SubTablas DSegundaAsistio on DSegundaAsistio.Id= DSEgunda.Id_Asistio
+left join Programacion ProgramacionSegunda on ProgramacionSegunda.Id=DSEgunda.Id_Programa
+--left join SubTablas GrupoSegunda on GrupoSegunda.Id= ProgramacionSegunda.Id_Grupo
+--
 ,
 (
   select per.Id_Declaracion, count(per.Id)  as TotalFamilia,
@@ -165,4 +178,8 @@ And Declaracion.Fecha_Radicacion >= @Fecha_Inicial_Radicacion
 And Declaracion.Fecha_Radicacion <= @Fecha_Final_Radicacion
 AND Declaracion.Tipo_Declaracion = @Declarante
 and PerCount.Id_Declaracion= Declaracion.Id
-order by Declaracion.Id
+--order by DSEgunda.Fecha
+) r  
+where r.AsistioSegundaEntrega='Si'
+group by r.Regional, CONVERT(CHAR(6), r.FechaSegundaEntrega,112)
+order by r.Regional 

@@ -11,6 +11,10 @@ declare  @Id_Programado int = 4038
 declare  @Id_ReProgramado int = 4039
 declare  @Id_NO int = 20
 
+declare @PrimeraEntrega int =72
+declare @SegundaEntrega int =918
+
+
 select 
     Declaracion.Id,
 	convert(date,Declaracion.Fecha_Radicacion) as Fecha_Radicacion,
@@ -40,8 +44,8 @@ select
 	+ Coalesce(Declaracion.Lactantes,0)
 	+ Coalesce(Declaracion.Resto_Nucleo,0) as TFE,
 	PerCount.TotalFamilia as TFR,
-	Coalesce(Elegible.Descripcion,'') as Elegible,
-	convert(date,DElegible.Fecha) as FechaElegible,
+	Coalesce(Elegible.Descripcion,'') as  Elegibilidad,
+	convert(date,DElegible.Fecha) as FechaElegibilidad,
 	Coalesce(Contactado.Descripcion,'') as Contactado,
 	convert(date,DContactado.Fecha) as FechaContactado,
 	Coalesce(Programado.Descripcion,'') as Programado,
@@ -50,7 +54,12 @@ select
 	convert(date,DReProgramado.Fecha) as FechaReProgramado,
 	Atendido.Descripcion as Atendido,
 	Coalesce(NoAtencion.Descripcion,'') as MotivoNoAtencion,
-	Coalesce(TipoReProgramacion.Descripcion,'') as TipoReprogramacion
+	Coalesce(TipoReProgramacion.Descripcion,'') as TipoReprogramacion,
+	--convert(date, DSegunda.Fecha) as FechaSegundaEntrega,
+	convert(date, ProgramacionSegunda.Fecha) as FechaSegundaEntrega,
+	coalesce(DSegundaAsistio.Descripcion,'') as AsistioSegundaEntrega	
+	--ProgramacionSegunda.Numero,
+	--GrupoSegunda.Descripcion
 
 from Declaracion
 INNER JOIN Personas ON Declaracion.Id = Personas.Id_Declaracion
@@ -130,6 +139,21 @@ left join Declaracion_Estados DTipoReProgramacion on DTipoReProgramacion.Id=(
 )
 left join Programacion pr on pr.Id= DTipoReProgramacion.Id_Programa
 left join SubTablas TipoReProgramacion on TipoReProgramacion.Id= pr.Id_TipoEntrega
+
+-- Fecha Segunda Entrega y si asistio ..
+-- tomar la fecha del grupo no del estado !!!!! 
+left join Declaracion_Estados DSEgunda on DSEgunda.Id=(
+   select top 1 Declaracion_estados.Id 
+     from Declaracion_Estados 
+	    join Programacion pr on pr.Id=Declaracion_Estados.Id_Programa and pr.Id_TipoEntrega=@SegundaEntrega
+     where Declaracion_Estados.Id_Declaracion=Declaracion.Id
+     and  Declaracion_Estados.Id_Tipo_Estado in (@Id_Programado, @Id_ReProgramado) 
+	 order by pr.Fecha desc, Declaracion_Estados.Id desc
+)
+left join SubTablas DSegundaAsistio on DSegundaAsistio.Id= DSEgunda.Id_Asistio
+left join Programacion ProgramacionSegunda on ProgramacionSegunda.Id=DSEgunda.Id_Programa
+--left join SubTablas GrupoSegunda on GrupoSegunda.Id= ProgramacionSegunda.Id_Grupo
+--
 ,
 (
   select per.Id_Declaracion, count(per.Id)  as TotalFamilia,
