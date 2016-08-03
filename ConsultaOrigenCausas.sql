@@ -1,17 +1,25 @@
 use IRDCOL
-declare  @Fecha_Radicacion_Inicial varchar(8) = '20151001';
-declare  @Fecha_Radicacion_Final varchar(8) = '20160630';
+declare  @Fecha_Radicacion_Inicial varchar(8) = '20140201';
+declare  @Fecha_Radicacion_Final varchar(8) = '20150531';
 declare  @Tipo_Declaracion int = 921  --desplazado
 declare  @Tipo_Persona varchar(1) ='D';  --declarante
 declare  @SegundaEntrega int = 918
+declare  @PrimeraEntrega int = 72
 
-select --CONVERT(CHAR(6),dd.Fecha_Radicacion,112), dd.Departamento, count(dd.id)
+--select --CONVERT(CHAR(6),dd.Fecha_Radicacion,112), dd.Departamento, count(dd.id)
     --sdoa.Descripcion, count(dd.id)
-	dd.CuantasVecesDesplazado, count(dd.id)
+	--dd.CuantasVecesDesplazado, count(dd.id)
+
+select	dd.MunicipioAtencion, dd.Departamento, dd.Municipio, count(dd.id) as desplazados
+	--dd.MunicipioAtencion, dd.Departamento, count(dd.id) as deplazados
+--stt.Descripcion, stt.*	
+--select  dd.MunicipioAtencion, ttv.Descripcion, count(dd.id) as Cantidad
+
 from 
 (
 
 SELECT     
+    Declaracion.Id_Tipo_Tenencia_Vivienda,
 	Declaracion.Id,
 	convert(date,Declaracion.Fecha_Radicacion) as Fecha_Radicacion,
 	convert(date,Declaracion.Fecha_Desplazamiento) as Fecha_Desplazamiento,
@@ -283,13 +291,34 @@ And Declaracion.Fecha_Radicacion >= @Fecha_Radicacion_Inicial
 And Declaracion.Fecha_Radicacion <= @Fecha_Radicacion_Final
 AND Declaracion.Tipo_Declaracion = @Tipo_Declaracion
 and PerCount.Id_Declaracion= Declaracion.Id
+--and Personas.Identificacion='25431884'
 --order by Declaracion.Id
 ) dd 
+ 
   --left join Declaracion_Causas_Desplazamiento doa
   --on doa.Id_Declaracion = dd.Id
   --left join SubTablas sdoa on sdoa.Id = doa.Id_Causa_Desplazamiento
-  
+ 
+ --left  join Declaracion_Danos_Familia doa 
+ --on doa.Id_Declaracion = dd.Id
+  --left join SubTablas sdoa on sdoa.Id = doa.Id_Danos_Familia
 
-group by --CONVERT(CHAR(6),dd.Fecha_Radicacion,112),  dd.Departamento
+--group by --CONVERT(CHAR(6),dd.Fecha_Radicacion,112),  dd.Departamento
          --sdoa.Descripcion
-		 dd.CuantasVecesDesplazado
+		 --dd.CuantasVecesDesplazado
+--		 dd.MunicipioAtencion, dd.Departamento, dd.Municipio
+
+--group by sdoa.Descripcion
+
+  group by dd.MunicipioAtencion, dd.Departamento, dd.Municipio 
+  --order by dd.MunicipioAtencion, count(dd.id) desc 
+  order by count(dd.id) desc 
+  --left join SubTablas stt on stt.Id= dd.Id_Tipo_Tenencia_Vivienda
+
+/*
+left join Declaracion_PAARI dp on dp.Id_Declaracion= dd.Id and dp.Id_Tipo_Entrega=@PrimeraEntrega
+left join SubTablas ttv on ttv.Id= coalesce(dp.Id_Alojamiento_Tipo_Vivienda_Otro, dp.Id_Alojamiento_Tipo_Vivienda)
+group by dd.MunicipioAtencion, ttv.Descripcion
+*/
+
+
