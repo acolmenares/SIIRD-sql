@@ -1,7 +1,7 @@
 use IRDCOL
 
 declare  @Fecha_Inicial_Radicacion varchar(8) = '20151001';
-declare  @Fecha_Final_Radicacion varchar(8) = '20160731';
+declare  @Fecha_Final_Radicacion varchar(8) = '20160831';
 declare  @Declarante int = 921
 declare  @Tipo_Persona varchar(1) ='D';
 
@@ -24,7 +24,7 @@ Declaracion.Fecha_Valoracion as FechaAtencion,
 Declaracion.Fecha_Radicacion as FechaRadicacion,
 ProgramacionPrimera.Fecha,
 ProgramacionPrimera.Numero as Programacion,
-  
+GrupoPrimera.Descripcion as Grupo,
 EstadoPrimera.Descripcion as EstadoPrimera
 
 from Declaracion
@@ -50,8 +50,11 @@ and EstadoPrimera='Cerrado'
 and 
 
 (
-r.Atendido='Si' and r.FechaAtencion is null
+(r.Atendido='Si' and r.FechaAtencion is null)
 or
-r.Atendido='No' and r.FechaAtencion is not null
+(r.Atendido='No' and r.FechaAtencion is not null)
+or
+(
+  r.Grupo is null and r.FechaAtencion is not null)
 )
 

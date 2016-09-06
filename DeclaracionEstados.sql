@@ -1,7 +1,7 @@
 use IRDCOL;
 
 declare  @Fecha_Inicial_Radicacion varchar(8) = '20151001';
-declare  @Fecha_Final_Radicacion varchar(8) = '20160731';
+declare  @Fecha_Final_Radicacion varchar(8) = '20160831';
 declare  @Declarante int = 921
 declare  @Tipo_Persona varchar(1) ='D';
 
@@ -114,12 +114,15 @@ left join Declaracion_Estados DContactado on DContactado.Id=(
   order by Declaracion_Estados.Fecha desc, Declaracion_Estados.Id desc
 )
 left join SubTablas Contactado on Contactado.Id= DContactado.Id_Como_Estado
+-- inicio 1
 left join Declaracion_Estados DProgramado on DProgramado.Id=(
   select top 1 Declaracion_Estados.Id from  Declaracion_Estados  
+  join Programacion pr on pr.Id=Declaracion_Estados.Id_Programa and pr.Id_TipoEntrega=@PrimeraEntrega  
   where Declaracion_Estados.Id_Declaracion=Declaracion.Id
-  and Declaracion_Estados.Id_Tipo_Estado=@Id_Programado
+  and  Declaracion_Estados.Id_Tipo_Estado in (@Id_Programado, @Id_ReProgramado) 
   order by Declaracion_Estados.Fecha desc, Declaracion_Estados.Id desc
 )
+-- fin 1
 left join SubTablas Programado on Programado.Id= DProgramado.Id_Como_Estado
 left join Declaracion_Estados DReProgramado on DReProgramado.Id=(
   select top 1 Declaracion_Estados.Id from  Declaracion_Estados  

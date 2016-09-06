@@ -1,6 +1,6 @@
 use IRDCOL
 declare  @Fecha_Radicacion_Inicial varchar(8) = '20151001';
-declare  @Fecha_Radicacion_Final varchar(8) = '20160731';
+declare  @Fecha_Radicacion_Final varchar(8) = '20160831';
 declare  @Tipo_Declaracion int = 921  --desplazado
 declare  @Tipo_Persona varchar(1) ='D';  --declarante
 declare  @SegundaEntrega int = 918
