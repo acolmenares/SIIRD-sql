@@ -1,7 +1,7 @@
 use IRDCOL;
 
 declare  @Fecha_Inicial_Radicacion varchar(8) = '20151001';
-declare  @Fecha_Final_Radicacion varchar(8) = '20160831';
+declare  @Fecha_Final_Radicacion varchar(8) = '20160930';
 declare  @Declarante int = 921
 declare  @Tipo_Persona varchar(1) ='D';
 
@@ -13,8 +13,8 @@ declare  @Id_NO int = 20
 
 declare @PrimeraEntrega int =72
 declare @SegundaEntrega int =918
-
-
+declare @programadoQueNoAsistioId int = 1117
+--select * from (
 select 
     Declaracion.Id,
 	convert(date,Declaracion.Fecha_Radicacion) as Fecha_Radicacion,
@@ -44,7 +44,10 @@ select
 	+ Coalesce(Declaracion.Lactantes,0)
 	+ Coalesce(Declaracion.Resto_Nucleo,0) as TFE,
 	PerCount.TotalFamilia as TFR,
-	Coalesce(Elegible.Descripcion,'') as  Elegibilidad,
+	case when Declaracion.Id_Motivo_Noatender is not null and Declaracion.Id_Motivo_Noatender<>@programadoQueNoAsistioId  
+	    then 'No' 
+		else Coalesce(Elegible.Descripcion,'') end as  Elegibilidad,
+	--Coalesce(Elegible.Descripcion,'') as  ElegibilidadX,
 	convert(date,DElegible.Fecha) as FechaElegibilidad,
 	Coalesce(Contactado.Descripcion,'') as Contactado,
 	convert(date,DContactado.Fecha) as FechaContactado,
@@ -170,4 +173,7 @@ And Declaracion.Fecha_Radicacion >= @Fecha_Inicial_Radicacion
 And Declaracion.Fecha_Radicacion <= @Fecha_Final_Radicacion
 AND Declaracion.Tipo_Declaracion = @Declarante
 and PerCount.Id_Declaracion= Declaracion.Id
+--and Personas.Identificacion in ('1059356277','4620161')
 order by Declaracion.Id
+--) r
+--where r.Elegibilidad<>r.ElegibilidadX
