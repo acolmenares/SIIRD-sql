@@ -1,7 +1,7 @@
 use IRDCOL
 
 declare  @Fecha_Inicial_Radicacion varchar(8) = '20151001';
-declare  @Fecha_Final_Radicacion varchar(8) = '20160831';
+declare  @Fecha_Final_Radicacion varchar(8) = '20160930';
 declare  @Declarante int = 921
 declare  @Tipo_Persona varchar(1) ='D';
 
