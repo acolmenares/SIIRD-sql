@@ -1,0 +1,13 @@
+dbo.CYRCostShare
+dbo.Reprogramaciones
+dbo.CYRSaldosINventarios
+
+
+
+select * from CYR_Arbol_Procesos where Id_CYR_Arbol in ( select Id from CYR_Arbol where Id_Padre=13) -- logistica
+
+Id	Id_CYR_Arbol	Id_Tipo_Consulta	Descripcion
+9	14	1	dbo.CYRCostShare                                Si
+13	17	1	dbo.CYRConsultaxComplementosxGrupo
+14	18	1	dbo.CYRConsultaxComplementos
+17	20	1	dbo.CYRSaldosInventarios                        Si
