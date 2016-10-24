@@ -1,0 +1,170 @@
+USE [IRDCOL]
+GO
+/****** Object:  StoredProcedure [dbo].[CYRCostShare]    Script Date: 10/24/2016 14:38:05 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+--exec dbo.CYRCostShare '01/Nov/2014' , '30/Nov/2014',1637
+
+ALTER procedure [dbo].[CYRCostShare]
+@Fecha_Entrega_Inicial nvarchar(11) = null,
+@Fecha_Entrega_Final nvarchar(11)= null,
+@Id_Regional int = null
+As
+
+Declare @Squery varchar(8000);
+SET NOCOUNT ON;
+SET Dateformat DMY;
+
+declare @FecIniEnt varchar(20);
+declare @FecFinEnt varchar(20);
+
+Set @FecIniEnt = @Fecha_Entrega_Inicial + ' 00:00:00'
+Set @FecFinEnt = @Fecha_Entrega_Final + ' 23:59:59'
+
+Set @Squery = '
+
+Select Id,IdProducto, regional, producto 
+,
+cast((EntradaCantAntes - SalidaCantAntes) as decimal(12,0)) as [Cantidad Antes] , 
+case (EntradaCantAntes - SalidaCantAntes)
+when 0 then 0
+else    cast(((EntradaTtlAntes   - SalidattlAntes) / (EntradaCantAntes-SalidaCantAntes)) as decimal(12,0))
+end as [Valor Unitario Antes] 
+, cast((EntradaTtlAntes - SalidattlAntes) as decimal(12,0)) as [Valor Total Antes]
+,
+cast(EntradaCantRango as decimal(12,0)) as [Cantidad Entrada],
+case EntradaCantRango
+when 0 then 0
+else cast((EntradaTtlRango / EntradaCantRango) as decimal(12,0))
+end as [Valor Entrada]
+, cast(EntradaTtlRango as decimal(12,0)) as [Total Entrada]
+,
+cast(SalidaCantRango as decimal(12,0)) as [Cantidad Salida],
+case (SalidaCantRango)
+when 0 then 0
+else cast((SalidattlRango / SalidaCantRango) as decimal(12,0)) 
+end as [Valor Unitario Salidas] ,
+cast(SalidattlRango as decimal(12,0)) as [Valor Salida]
+,
+cast((EntradaCantAntes - SalidaCantAntes) + (EntradaCantRango -SalidaCantRango ) as decimal(12,0)) as [Cantidad Total]
+,
+case (EntradaCantAntes - SalidaCantAntes) + (EntradaCantRango -SalidaCantRango )
+when 0 then 0
+else cast((((EntradaTtlAntes - SalidattlAntes) + (EntradaTtlRango - SalidattlRango)) / ((EntradaCantAntes - SalidaCantAntes) + (EntradaCantRango -SalidaCantRango ))) as decimal(12,0))
+end as [Valor Unitario ] 
+,
+case (EntradaCantAntes - SalidaCantAntes) + (EntradaCantRango -SalidaCantRango )
+when 0 then 0
+else
+cast((EntradaTtlAntes - SalidattlAntes) + (EntradaTtlRango - SalidattlRango) as decimal(12,0))
+end as [Valor Total]
+
+
+from
+
+
+(
+Select distinct producto.ID as IdProducto, producto.descripcion as Producto, regional.Id,regional.Descripcion as Regional
+--
+--  Antes
+--
+,
+	(Select isnull(SUM(isnull(entradas_detalle.Cantidad,0) ),0)
+	 from Entradas 
+	 LEFT OUTER JOIN Entradas_Detalle  ON Entradas_Detalle.Id_Entrada = Entradas.Id
+	 Where Fecha >=  ''29/Sep/2016 00:00:00''
+	   and Fecha < ''' + cast(@FecIniEnt as varchar) + '''
+	   and Entradas.Id_Regional = regional.Id 
+	   and Entradas_Detalle.Id_Producto = producto.id)  as EntradaCantAntes
+,
+	(Select isnull(SUM(isnull(entradas_detalle.Cantidad,0) * isnull(Valor_Unitario,0)  ),0)
+	 from Entradas 
+	 LEFT OUTER JOIN Entradas_Detalle  ON Entradas_Detalle.Id_Entrada = Entradas.Id
+	 Where Fecha >= ''29/Sep/2016 00:00:00''
+	   and Fecha < ''' + cast(@FecIniEnt as varchar) + '''
+	   and Entradas.Id_Regional = regional.Id 
+       and Entradas_Detalle.Id_Producto = producto.id)  as EntradaTtlAntes
+,
+	(Select isnull(SUM(isnull(salidas_detalle.Cantidad,0) ),0)
+	 from Salidas 
+	 LEFT OUTER JOIN Salidas_Detalle  ON Salidas_Detalle.Id_salida = Salidas.Id
+	 Where Fecha >= ''29/Sep/2016 00:00:00''
+	   and Fecha < ''' + cast(@FecIniEnt as varchar) + '''
+	   and Salidas.Id_Regional = regional.Id
+	   and Salidas_Detalle.Id_Producto = producto.id)  as SalidaCantAntes
+,
+	(Select isnull(SUM(isnull(Salidas_Detalle_Entradas.Cantidad,0) *  isnull(Entradas_Detalle.Valor_Unitario,0)),0)
+	 from Salidas 
+	 LEFT OUTER JOIN Salidas_Detalle  ON Salidas_Detalle.Id_salida = Salidas.Id
+	 LEFT OUTER JOIN Salidas_Detalle_Entradas   ON Salidas_Detalle_Entradas.Id_Salida_Detalle  = Salidas_detalle.Id
+	 LEFT OUTER JOIN Entradas_Distribucion    ON Entradas_Distribucion.Id = Salidas_Detalle_Entradas.Id_Entrada_Distribucion  
+	 LEFT OUTER JOIN Entradas_Detalle     ON Entradas_Detalle.Id = Entradas_Distribucion.Id_Entrada_Detalle  
+	 Where Fecha >= ''29/Sep/2016 00:00:00''
+	   and Fecha < ''' + cast(@FecIniEnt as varchar) + '''
+	   and Salidas.Id_Regional = regional.Id 
+	   and Salidas_Detalle.Id_Producto = producto.id)  as SalidattlAntes
+
+--
+--  Rango de Tiempo
+--
+,
+	(Select isnull(SUM(isnull(entradas_detalle.Cantidad,0)),0)
+	 from Entradas 
+	 LEFT OUTER JOIN Entradas_Detalle  ON Entradas_Detalle.Id_Entrada = Entradas.Id
+	 Where Fecha >= ''' + cast(@FecIniEnt as varchar) + '''
+	   and Fecha <= ''' + cast(@FecFinEnt as varchar) + '''
+	   and Entradas.Id_Regional = regional.Id 
+	   and Entradas_Detalle.Id_Producto = producto.id)  as EntradaCantRango
+,
+	(Select isnull(SUM(isnull(entradas_detalle.Cantidad,0) * isnull(Valor_Unitario,0)),0)
+	 from Entradas 
+	 LEFT OUTER JOIN Entradas_Detalle  ON Entradas_Detalle.Id_Entrada = Entradas.Id
+	 Where Fecha >= ''' + cast(@FecIniEnt as varchar) + '''
+	   and Fecha <= ''' + cast(@FecFinEnt as varchar) + '''
+       and Entradas.Id_Regional = regional.Id 
+	   and Entradas_Detalle.Id_Producto = producto.id)  as EntradaTtlRango
+,
+	(Select isnull(SUM(isnull(salidas_detalle.Cantidad,0) ),0)
+	 from Salidas 
+	 LEFT OUTER JOIN Salidas_Detalle  ON Salidas_Detalle.Id_salida = Salidas.Id
+	 Where Fecha >= ''' + cast(@FecIniEnt as varchar) + '''
+	   and Fecha <= ''' + cast(@FecFinEnt as varchar) + '''
+       and Salidas.Id_Regional = regional.Id 
+	   and Salidas_Detalle.Id_Producto = producto.id)  as SalidaCantRango
+
+,
+	(Select isnull(SUM(isnull(Salidas_Detalle_Entradas.Cantidad,0) *  isnull(Entradas_Detalle.Valor_Unitario,0)),0)
+	 from Salidas 
+	 LEFT OUTER JOIN Salidas_Detalle  ON Salidas_Detalle.Id_salida = Salidas.Id
+	 LEFT OUTER JOIN Salidas_Detalle_Entradas   ON Salidas_Detalle_Entradas.Id_Salida_Detalle  = Salidas_detalle.Id
+	 LEFT OUTER JOIN Entradas_Distribucion    ON Entradas_Distribucion.Id = Salidas_Detalle_Entradas.Id_Entrada_Distribucion  
+	 LEFT OUTER JOIN Entradas_Detalle     ON Entradas_Detalle.Id = Entradas_Distribucion.Id_Entrada_Detalle  
+	 Where Fecha >= ''' + cast(@FecIniEnt as varchar) + '''
+	   and Fecha <= ''' + cast(@FecFinEnt as varchar) + '''
+	   and Salidas.Id_Regional = regional.Id 
+	   and Salidas_Detalle.Id_Producto = producto.id)  as SalidattlRango
+
+ from Entradas
+ LEFT OUTER JOIN Entradas_Detalle  ON Entradas_Detalle.Id_Entrada = Entradas.Id
+ LEFT OUTER JOIN Subtablas Producto ON Entradas_Detalle.Id_Producto   = Producto.Id
+ LEFT OUTER JOIN Subtablas Regional ON Entradas.Id_Regional = Regional.Id
+  Where Fecha >= ''29/Sep/2016 00:00:00''
+   and Fecha <= ''30/Sep/2017 23:59:59'''
+
+	-- Regional
+	if (@Id_Regional > 0)
+	Begin
+		Set @Squery = @Squery + ' AND Entradas.Id_Regional = ' + cast(@Id_Regional as varchar)
+	End
+
+	Set @Squery = @Squery +    '  
+   )as t
+
+order by Regional, Producto '     
+--
+--   
+--print(@Squery)
+exec (@Squery)
