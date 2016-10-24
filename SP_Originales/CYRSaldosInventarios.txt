@@ -1,0 +1,100 @@
+USE [IRDCOL]
+GO
+/****** Object:  StoredProcedure [dbo].[CYRSaldosInventarios]    Script Date: 10/24/2016 15:01:46 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+--
+-- exec dbo.CYRSaldosInventarios '01/May/2015' , '31/May/2015',4521
+--
+
+ALTER procedure [dbo].[CYRSaldosInventarios]
+@Fecha_Entrega_Inicial nvarchar(11) = null,
+@Fecha_Entrega_Final nvarchar(11)= null,
+@Id_Regional int = null
+As
+
+Declare @Squery varchar(8000);
+SET NOCOUNT ON;
+SET Dateformat DMY;
+
+declare @FecIniEnt varchar(20);
+declare @FecFinEnt varchar(20);
+
+Set @FecIniEnt = @Fecha_Entrega_Inicial + ' 00:00:00'
+Set @FecFinEnt = @Fecha_Entrega_Final + ' 23:59:59'
+
+Set @Squery = '
+Select id, idproducto, regional, producto , Antes,Entradas,Salidas,Total
+from
+(Select Id,IdProducto, Regional, Producto,
+cast((EntradaCantAntes - SalidaCantAntes) as decimal(12,0)) as [Antes] , 
+cast(EntradaCantRango as decimal(12,0)) as [Entradas],
+cast(SalidaCantRango as decimal(12,0)) as [Salidas],
+cast((EntradaCantAntes - SalidaCantAntes) + (EntradaCantRango -SalidaCantRango ) as decimal(12,0)) as [Total]
+from
+(
+Select distinct producto.ID as IdProducto, producto.descripcion as Producto, regional.Id,regional.Descripcion as Regional
+--
+--  Antes
+--
+,
+	(Select isnull(SUM(isnull(entradas_detalle.Cantidad,0) ),0)
+	 from Entradas 
+	 LEFT OUTER JOIN Entradas_Detalle  ON Entradas_Detalle.Id_Entrada = Entradas.Id
+	 Where Fecha >=  ''01/Oct/2014 00:00:00''
+	   and Fecha < ''' + cast(@FecIniEnt as varchar) + '''
+	   and Entradas.Id_Regional = regional.Id 
+	   and Entradas_Detalle.Id_Producto = producto.id)  as EntradaCantAntes
+,
+	(Select isnull(SUM(isnull(salidas_detalle.Cantidad,0) ),0)
+	 from Salidas 
+	 LEFT OUTER JOIN Salidas_Detalle  ON Salidas_Detalle.Id_salida = Salidas.Id
+	 Where Fecha >= ''01/Oct/2014 00:00:00''
+	   and Fecha < ''' + cast(@FecIniEnt as varchar) + '''
+	   and Salidas.Id_Regional = regional.Id
+	   and Salidas_Detalle.Id_Producto = producto.id)  as SalidaCantAntes
+,
+
+--
+--  Rango de Tiempo
+--
+	(Select isnull(SUM(isnull(entradas_detalle.Cantidad,0)),0)
+	 from Entradas 
+	 LEFT OUTER JOIN Entradas_Detalle  ON Entradas_Detalle.Id_Entrada = Entradas.Id
+	 Where Fecha >= ''' + cast(@FecIniEnt as varchar) + '''
+	   and Fecha <= ''' + cast(@FecFinEnt as varchar) + '''
+	   and Entradas.Id_Regional = regional.Id 
+	   and Entradas_Detalle.Id_Producto = producto.id)  as EntradaCantRango
+,
+	(Select isnull(SUM(isnull(salidas_detalle.Cantidad,0) ),0)
+	 from Salidas 
+	 LEFT OUTER JOIN Salidas_Detalle  ON Salidas_Detalle.Id_salida = Salidas.Id
+	 Where Fecha >= ''' + cast(@FecIniEnt as varchar) + '''
+	   and Fecha <= ''' + cast(@FecFinEnt as varchar) + '''
+       and Salidas.Id_Regional = regional.Id 
+	   and Salidas_Detalle.Id_Producto = producto.id)  as SalidaCantRango
+
+ from Entradas
+ LEFT OUTER JOIN Entradas_Detalle  ON Entradas_Detalle.Id_Entrada = Entradas.Id
+ LEFT OUTER JOIN Subtablas Producto ON Entradas_Detalle.Id_Producto   = Producto.Id
+ LEFT OUTER JOIN Subtablas Regional ON Entradas.Id_Regional = Regional.Id
+  Where Fecha >= ''01/Oct/2014 00:00:00''
+   and Fecha <= ''' + cast(@FecFinEnt as varchar) + ''''
+
+	-- Regional
+	if (@Id_Regional > 0)
+	Begin
+		Set @Squery = @Squery + ' AND Entradas.Id_Regional = ' + cast(@Id_Regional as varchar)
+	End
+
+	Set @Squery = @Squery +    ')as t
+ ) as m 
+ where  (Antes > 0 or  Entradas > 0 or  Salidas > 0 )
+ order by Regional, Producto'     
+--
+--   
+--print(@Squery)
+exec (@Squery)
