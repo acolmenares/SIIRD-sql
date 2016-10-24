@@ -1,0 +1,168 @@
+USE [IRDCOL]
+GO
+/****** Object:  StoredProcedure [dbo].[ConsultaReprogramaciones]    Script Date: 10/24/2016 14:48:42 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+--  exec [dbo].[ConsultaReprogramaciones] 1637
+
+ALTER procedure [dbo].[ConsultaReprogramaciones]
+@Id_Regional Int = null
+As
+
+Declare @Desde varchar(8)= '20160929'
+
+Declare @Squery varchar(8000);
+SET NOCOUNT ON;
+SET Dateformat DMY;
+
+
+-- Programaciones de primera entrega
+
+Set @Squery = '
+Select * from declaracion
+LEFT OUTER JOIN personas ON Declaracion.Id = Personas.Id_Declaracion
+LEFT OUTER JOIN Subtablas Lentrega ON Declaracion.Id_lugar_fuente  = Lentrega.Id
+LEFT OUTER JOIN Subtablas Regional ON Declaracion.Id_regional = Regional.Id
+LEFT OUTER JOIN declaracion_estados ON Declaracion.Id = Declaracion_Estados.Id_Declaracion
+LEFT OUTER JOIN Programacion ON Programacion.Id = Declaracion_Estados.Id_Programa 
+LEFT OUTER JOIN Subtablas Tentrega ON Programacion.Id_TipoEntrega   = Tentrega.Id
+where 1 = 1 and personas.tipo =''D''
+and declaracion_estados.Id_Tipo_Estado = 4038
+and Declaracion_Estados.Id_Asistio = 20
+and Id_Motivo_Noatender = 1117
+and programacion.Id_TipoEntrega = 72
+and Declaracion.Fecha_Radicacion >= '''+@Desde+''' '
+
+if @Id_Regional is not null
+Begin
+Set @Squery = @Squery + ' AND Declaracion.Id_Regional = ' + cast(@Id_Regional as varchar)
+End
+
+--
+-- Primera validacion cuenta que no haya sido reprogramado de Primera entrega
+-- Segunda Validacion verifica que no se haya creado el registro cancelando la elegibilidad del declarante
+--
+
+Set @Squery = @Squery + '
+ and (Select COUNT(declaracion_estados.id) 
+   from Declaracion_Estados 
+   LEFT OUTER JOIN Programacion ON Programacion.Id = Declaracion_Estados.Id_Programa 
+   where id_declaracion = declaracion.id
+    and Id_Tipo_Estado = 4039
+    and programacion.Id_TipoEntrega = 72
+    and Id_Asistio is null) = 0 
+and  
+(Select Count(*) from
+(Select top 1 * from
+(Select * 
+  from declaracion_estados
+ where id_declaracion = declaracion.id
+   and id_tipo_estado = 4036
+ ) as t order by fecha desc, id desc ) as u
+ where id_como_estado = 20) = 0
+
+Union All
+
+Select * from declaracion
+LEFT OUTER JOIN personas ON Declaracion.Id = Personas.Id_Declaracion
+LEFT OUTER JOIN Subtablas Lentrega ON Declaracion.Id_lugar_fuente  = Lentrega.Id
+LEFT OUTER JOIN Subtablas Regional ON Declaracion.Id_regional = Regional.Id
+LEFT OUTER JOIN declaracion_estados ON Declaracion.Id = Declaracion_Estados.Id_Declaracion
+LEFT OUTER JOIN Programacion ON Programacion.Id = Declaracion_Estados.Id_Programa 
+LEFT OUTER JOIN Subtablas Tentrega ON Programacion.Id_TipoEntrega   = Tentrega.Id
+where 1=1 and personas.tipo =''D'' 
+and declaracion_estados.Id_Tipo_Estado = 4038
+and Declaracion_Estados.Id_Asistio = 20
+and programacion.Id_TipoEntrega = 918
+and Declaracion.Fecha_Radicacion >= '''+@Desde+''' '
+
+if @Id_Regional is not null
+Begin
+Set @Squery = @Squery + ' AND Declaracion.Id_Regional = ' + cast(@Id_Regional as varchar)
+End
+
+--
+-- Primera validacion cuenta que no haya sido reprogramado de Segunda entrega
+-- Segunda Validacion verifica que no se haya creado el registro cancelando la elegibilidad del declarante
+--
+
+
+Set @Squery = @Squery + '
+and (Select COUNT(declaracion_estados.id) 
+   from Declaracion_Estados 
+   LEFT OUTER JOIN Programacion ON Programacion.Id = Declaracion_Estados.Id_Programa 
+   where id_declaracion = declaracion.id
+    and Id_Tipo_Estado = 4039
+    and programacion.Id_TipoEntrega = 918    ) = 0 
+
+and  
+(Select Count(*) from
+(Select top 1 * from
+(Select * 
+  from declaracion_estados
+ where id_declaracion = declaracion.id
+   and id_tipo_estado = 4036
+ ) as t order by fecha desc, id desc ) as u
+ where id_como_estado = 20) = 0
+
+Union All
+
+Select * from declaracion
+LEFT OUTER JOIN personas ON Declaracion.Id = Personas.Id_Declaracion
+LEFT OUTER JOIN Subtablas Lentrega ON Declaracion.Id_lugar_fuente  = Lentrega.Id
+LEFT OUTER JOIN Subtablas Regional ON Declaracion.Id_regional = Regional.Id
+LEFT OUTER JOIN declaracion_estados ON Declaracion.Id = Declaracion_Estados.Id_Declaracion
+LEFT OUTER JOIN Programacion ON Programacion.Id = Declaracion_Estados.Id_Programa 
+LEFT OUTER JOIN Subtablas Tentrega ON Programacion.Id_TipoEntrega   = Tentrega.Id
+where 1=1 and personas.tipo =''D''
+and declaracion_estados.Id_Tipo_Estado = 4039
+and Declaracion_Estados.Id_Asistio = 20
+and Declaracion_Estados.Id_Motivo_NoAtencion is null
+and programacion.Id_TipoEntrega = 918 
+and Declaracion.Fecha_Radicacion >= '''+@Desde+''' '
+
+if @Id_Regional is not null
+Begin
+Set @Squery = @Squery + ' AND Declaracion.Id_Regional = ' + cast(@Id_Regional as varchar)
+End
+
+--
+-- Primera validacion cuenta que no haya sido reprogramado de Segunda entrega ya regprogramado anteriormente
+-- Segunda Validacion verifica que no se haya creado el registro cancelando la elegibilidad del declarante
+--
+
+Set @Squery = @Squery + '
+and (Select COUNT(declaracion_estados.id) 
+   from Declaracion_Estados 
+   LEFT OUTER JOIN Programacion ON Programacion.Id = Declaracion_Estados.Id_Programa 
+   where id_declaracion = declaracion.id
+    and Id_Tipo_Estado = 4039
+    and programacion.Id_TipoEntrega = 918
+    and Id_Asistio is null) = 0 
+
+and (Select COUNT(declaracion_estados.id) 
+   from Declaracion_Estados 
+   LEFT OUTER JOIN Programacion ON Programacion.Id = Declaracion_Estados.Id_Programa 
+   where id_declaracion = declaracion.id
+    and Id_Tipo_Estado = 4039
+    and programacion.Id_TipoEntrega = 918
+    and Id_Asistio = 19) = 0 
+    
+and  
+(Select Count(*) from
+(Select top 1 * from
+(Select * 
+  from declaracion_estados
+ where id_declaracion = declaracion.id
+   and id_tipo_estado = 4036
+ ) as t order by fecha desc, id desc ) as u
+ where id_como_estado = 20) = 0
+  
+order by declaracion.id desc  
+    '
+    
+
+--print(@Squery)
+exec (@Squery)
