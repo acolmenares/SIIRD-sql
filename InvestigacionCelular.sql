@@ -1,7 +1,7 @@
 USE [IRDCOL]
 
-declare  @Fecha_Radicacion_Inicial varchar(8) = '20161001';
-declare  @Fecha_Radicacion_Final varchar(8) = '20161130';
+declare  @Fecha_Radicacion_Inicial varchar(8) = '20151001';
+declare  @Fecha_Radicacion_Final varchar(8) = '20161231';
 declare  @Tipo_Declaracion int = 921  --desplazado
 declare  @Tipo_Persona varchar(1) ='D'; -- declarante
 
@@ -147,6 +147,12 @@ And Declaracion.Fecha_Radicacion <= @Fecha_Radicacion_Final
 and Declaracion.Tipo_Declaracion= @Tipo_Declaracion
 --and EstadoPAARI.Descripcion is null
 and PerCount.Id_Declaracion= Declaracion.Id
+
+and Declaracion.id in (
+select p.Id_Declaracion from Personas p where p.Id in (
+select pc.Id_Persona from Personas_Contactos pc where pc.Descripcion like '%32246649%')
+)
+
 order by Declaracion.Id
 
 /*

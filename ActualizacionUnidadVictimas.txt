@@ -1,0 +1,318 @@
+Buscar los declarantes sin datos en Declaraciones_Unidades 
+
+Tipo_Declaracion=921 --desplazado
+(Persona tipo "D") -- declarante
+id_unidad =32
+Elegible = si,
+Atender = Si o no definido
+NO esta en Declaraciones_Unidades => ruv.Id is null o Id_EstadoUnidad is null o Estado_RUV is ( cualquiera de las tres condiciones)
+radicados en IRD en un rango de fechas
+>= RUVConsultaNoValorados
+
+Traer los DatosBasicos de cada persona consultando el WS Vivanto por Documento ( Devuelve un Listad de DatosBasicos la misma persona varias veces)
+
+Para cada registro revisar:
+si Hecho == Desplazamiento forzado
+    si la fuente == RUV => 
+        comparar que la "Numero_Declaracion" == "NUM_FUD_NUM_CASO"  || Fecha_Valoracion (IRD) <=  "F_VALORACION" ("F_VALORACION"  >= Fecha_Valoracion (IRD))    ==>
+            si "Estado" == "Incluido" => Id_EstadoUnidad = 371
+            si "Estado" == "No Incluido" => Id_EstadoUnidad = 372
+            guarda registro si Id_estadoUnidad<>0;
+            si la fechas de Declaracion o deplazamiento no coinciden hacer un log !!!! 
+            pasar a la siguiente declaracion
+
+    si la fuente == SIPOD => 
+        comparar que la "Fecha_Declaracion" == "F_DECLARACION"  ==> &&   --"Fecha_Desplazamiento" =="FECHA_SINIESTRO" =>  
+            si "ESTADO" == "Incluido" => Id_EstadoUnidad = 371
+            si "ESTADO" == "No Incluido" => Id_EstadoUnidad = 372
+            guarda registro si Id_estadoUnidad<>0;
+            pasar a la siguiente declaracion
+
+de lo contrario pasar al siguiente hecho
+    
+
+
+
+PARA EL PAARI si fecha_inclusion_paari >= fecha_atencion en ird (Fecha_valoracion)     
+
+
+Declaracion_UnidadesList.aspx
+
+Protected Sub btn_uariv_Click(sender As Object, e As System.EventArgs) Handles btn_uariv.Click
+
+Dim ListDeclaraciones As List(Of DeclaracionBrl)
+
+ListDeclaraciones = DeclaracionBrl.Cargarbusqueda(ddl_grupo.SelectedValue, "", "", ddl_regional.SelectedValue, "", "", rdpfechaInicialEntrega.DbSelectedDate, rdpfechaFinalEntrega.DbSelectedDate, ddl_Fuente.SelectedValue, "", "", "", 0, ddl_LugarFuente.SelectedValue)
+
+dsDatos = DeclaracionDAL.CargarporBusqueda(grupo, identificacion, nombre, regional, Fecha_Inicial_Radicacion, Fecha_Final_Radicacion, Fecha_Inicial_Entrega, Fecha_Final_Entrega, Fuente, fecha_inicial_Programacion, fecha_final_Programacion, horario, declarante, lugar)
+
+Return SqlHelper.ExecuteDataset(strCadenaConexion, "dbo.DeclaracionConsultarBusqueda", isNothingToDBNull(grupo), isNothingToDBNull(identificacion), isNothingToDBNull(nombre), isNothingToDBNull(regional), isNothingToDBNull(Fecha_Inicial_Radicacion), isNothingToDBNull(Fecha_Final_Radicacion), isNothingToDBNull(Fecha_Inicial_Entrega), isNothingToDBNull(Fecha_Final_Entrega), isNothingToDBNull(Fuente), isNothingToDBNull(fecha_inicial_programacion), isNothingToDBNull(fecha_final_programacion), isNothingToDBNull(horario), isNothingToDBNull(declarante), isNothingToDBNull(lugar))
+
+ListDeclaraciones : conjunto de datos sobre el que se va a efectuar la actualizacion del RUV
+
+por cada fila de ListDeclaraciones se ejecuta consulta al webservice:
+ds = Class1.ConsultaTodos(fila.Personas_Declarante.Identificacion)
+
+
+si el estado es ICLUIDO o NO INCLUIDO: 
+
+Declaracion_UnidadesDAL.Insertar(Id_Declaracion, Id_Unidad, Id_EstadoUnidad, Fecha_Inclusion, Fecha_Investigacion, Fecha_Creacion, Id_Usuario_Creacion, Fecha_Modificacion, Id_Usuario_Modificacion, Fecha_Cierre, Cierre, Fuente)
+
+---------------------------------------------------------------------------------------------------------
+-- en pantalla se listan asi:
+ListDeclarantesUnidades = DeclaracionBrl.CargarBusquedaDeclaraciones(0, ddl_grupo.SelectedValue, txt_identificacion.Text.Trim, txt_nombre.Text.Trim, ddl_regional.SelectedValue, wfechainicioradicacion, wfechafinalradicacion, wfechainicioentrega, wfechafinalentrega, ddl_Fuente.SelectedValue, wfechainicioprogramacion, wfechafinalprogramacion, whorario, ddl_tipodeclarante.SelectedValue, ddl_LugarFuente.SelectedValue, "A")
+
+   Public Shared Function CargarBusquedaDeclaraciones(ByVal Id_programa As Int32, ByVal grupo As Integer, ByVal identificacion As String, ByVal nombre As String, ByVal regional As Integer, ByVal Fecha_Inicial_Radicacion As String, ByVal Fecha_Final_Radicacion As String, ByVal Fecha_Inicial_Entrega As String, ByVal Fecha_Final_Entrega As String, ByVal Fuente As Int32, ByVal fecha_inicial_declaracion As String, ByVal fecha_final_Declaracion As String, ByVal horario As String, ByVal declarante As Int32, ByVal lugar As Int32, ByVal tiporeporte As String) As List(Of DeclaracionBrl)
+
+        Dim dsDatos As System.Data.DataSet
+        Dim lista As New List(Of DeclaracionBrl)
+        dsDatos = DeclaracionDAL.CargarBusquedaDeclaraciones(Id_programa, grupo, identificacion, nombre, regional, Fecha_Inicial_Radicacion, Fecha_Final_Radicacion, Fecha_Inicial_Entrega, Fecha_Final_Entrega, Fuente, fecha_inicial_declaracion, fecha_final_Declaracion, horario, declarante, lugar, tiporeporte)
+        For Each fila As DataRow In dsDatos.Tables(0).Rows
+            lista.Add(asignarValoresALasPropiedades(fila))
+        Next
+        Return lista
+
+    End Function
+
+
+    Public Shared Function CargarBusquedaDeclaraciones(ByVal id_programa As Int32, ByVal grupo As Integer, ByVal identificacion As String, ByVal nombre As String, ByVal regional As Integer, ByVal Fecha_Inicial_Radicacion As String, ByVal Fecha_Final_Radicacion As String, ByVal Fecha_Inicial_Entrega As String, ByVal Fecha_Final_Entrega As String, ByVal Fuente As Int32, ByVal fecha_inicial_declaracion As String, ByVal fecha_final_declaracion As String, ByVal horario As String, ByVal declarante As Int32, ByVal lugar As Int32, ByVal tiporeporte As String) As System.Data.DataSet
+        Return SqlHelper.ExecuteDataset(strCadenaConexion, "dbo.DeclaracionConsultarBusquedaDeclarantes", isNothingToDBNull(id_programa), isNothingToDBNull(grupo), isNothingToDBNull(identificacion), isNothingToDBNull(nombre), isNothingToDBNull(regional), isNothingToDBNull(Fecha_Inicial_Radicacion), isNothingToDBNull(Fecha_Final_Radicacion), isNothingToDBNull(Fecha_Inicial_Entrega), isNothingToDBNull(Fecha_Final_Entrega), isNothingToDBNull(Fuente), isNothingToDBNull(fecha_inicial_declaracion), isNothingToDBNull(fecha_final_declaracion), isNothingToDBNull(horario), isNothingToDBNull(declarante), isNothingToDBNull(lugar), isNothingToDBNull(tiporeporte))
+    End Function
+
+---------------------------------------------------------------------------------------------------------------
+
+
+Public Shared Function Insertar(ByVal Id_Declaracion As Int32, ByVal Id_Unidad As Int32, ByVal Id_EstadoUnidad As Int32, ByVal Fecha_Inclusion As DateTime, ByVal Fecha_Investigacion As DateTime, ByVal Fecha_Creacion As DateTime, ByVal Id_Usuario_Creacion As Int32, ByVal Fecha_Modificacion As DateTime, ByVal Id_Usuario_Modificacion As Int32, ByVal Fecha_Cierre As DateTime, ByVal Cierre As Boolean, ByVal Fuente As String) As Int32
+    Return SqlHelper.ExecuteScalar(strCadenaConexion, "dbo.Declaracion_UnidadesInsertar", isNothingToDBNull(Id_Declaracion), isNothingToDBNull(Id_Unidad), isNothingToDBNull(Id_EstadoUnidad), isNothingToDBNull(Fecha_Inclusion), isNothingToDBNull(Fecha_Investigacion), isNothingToDBNull(Fecha_Creacion), isNothingToDBNull(Id_Usuario_Creacion), isNothingToDBNull(Fecha_Modificacion), isNothingToDBNull(Id_Usuario_Modificacion), isNothingToDBNull(Fecha_Cierre), isNothingToDBNull(Cierre), isNothingToDBNull(Fuente))
+End Function
+
+
+http://190.60.70.149:82/LoginRest/Autentica.svc/Login/146,AICOLMENARESA,qFybbUDcL3
+
+Para cerrar sesión se utiliza
+ 
+http://190.60.70.149:82/LoginRest/Autentica.svc/Logout/146,IdUsuario,Token
+
+
+
+<IdUsuario>55806</IdUsuario>
+<Token>2ECB942BD9CB4BE0B2048FA3D53B1DD0</Token>
+
+<ArrayOfAutorizado xmlns="http://schemas.datacontract.org/2004/07/RestServiceAutentica" xmlns:i="http://www.w3.org/2001/XMLSchema-instance">
+<Autorizado>
+<IdUsuario>55806</IdUsuario>
+<Token>3FC3DFB74BF7447FB743684AD7F1338C</Token>
+</Autorizado>
+</ArrayOfAutorizado>
+
+
+Buscar por la cedula
+
+
+http://190.60.70.149:82/VivantoMovilRest/ServiceMovil.svc/Documento/146,idusuario,token,documento
+http://190.60.70.149:82/VivantoMovilRest/ServiceMovil.svc/Documento/146,55806,3FC3DFB74BF7447FB743684AD7F1338C,40612015
+
+retorna un arreglo con la persona en las diferentes fuentes, pueda estar vacio ( longitud = 0)
+
+<ArrayOfDatosBasicos xmlns="http://schemas.datacontract.org/2004/07/DataAccessRest.Entities" xmlns:i="http://www.w3.org/2001/XMLSchema-instance">
+<DatosBasicos>
+<APELLIDO1>MORENO</APELLIDO1>
+<APELLIDO2>VARON</APELLIDO2>
+<DISCAPACIDAD>-NINGUNA</DISCAPACIDAD>
+<DOCUMENTO>40612015</DOCUMENTO>
+<ETNIA>Ninguna</ETNIA>
+<FUENTE>RUV</FUENTE>
+<F_NACIMIENTO>1972-09-10T00:00:00</F_NACIMIENTO>
+<GENERO>Mujer</GENERO>
+<ID_PERSONA>10675547</ID_PERSONA>
+<NOMBRE1>DIOSELINA</NOMBRE1>
+<NOMBRE2 i:nil="true"/>
+<TIPO_DOCUMENTO>Cédula de Ciudadanía</TIPO_DOCUMENTO>
+</DatosBasicos>
+</ArrayOfDatosBasicos>
+
+tomar <FUENTE>RUV</FUENTE> y  <ID_PERSONA>10675547</ID_PERSONA>
+
+
+http://190.60.70.149:82/VivantoMovilRest/ServiceMovil.svc/Hechos/146,55806,3FC3DFB74BF7447FB743684AD7F1338C,idpersona,fuente
+http://190.60.70.149:82/VivantoMovilRest/ServiceMovil.svc/Hechos/146,55806,3FC3DFB74BF7447FB743684AD7F1338C,10675547,RUV
+
+retorna
+
+
+<ArrayOfDatosDetallados xmlns="http://schemas.datacontract.org/2004/07/DataAccessRest.Entities" xmlns:i="http://www.w3.org/2001/XMLSchema-instance">
+<DatosDetallados>
+<APELLIDO1>MORENO</APELLIDO1>
+<APELLIDO2>VARON</APELLIDO2>
+<DEPTO_DECLA>CAQUETÁ</DEPTO_DECLA>
+<DEPTO_OCU>PUTUMAYO</DEPTO_OCU>
+<DISCAPACIDAD>-NINGUNA</DISCAPACIDAD>
+<DOCUMENTO>40612015</DOCUMENTO>
+<ESTADO>Incluido</ESTADO>
+<ETNIA>Ninguna</ETNIA>
+<FECHA_SINIESTRO>2012-11-16T00:00:00</FECHA_SINIESTRO>
+<FUENTE>RUV</FUENTE>
+<F_DECLARACION>2013-03-09T00:00:00</F_DECLARACION>
+<F_NACIMIENTO>1972-09-10T00:00:00</F_NACIMIENTO>
+<F_VALORACION>2013-03-13T00:00:00</F_VALORACION>
+<GENERO>Mujer</GENERO>
+<HECHO>Amenaza</HECHO>
+<ID_ANEXO>109699</ID_ANEXO>
+<ID_DECLARACION>2237115</ID_DECLARACION>
+<ID_MIJEFE>10739935</ID_MIJEFE>
+<ID_PERSONA>10675547</ID_PERSONA>
+<ID_REG_PERSONA>10739935</ID_REG_PERSONA>
+<ID_SINIESTRO>258208</ID_SINIESTRO>
+<MUN_DECLA>CURILLO</MUN_DECLA>
+<MUN_OCU>MOCOA</MUN_OCU>
+<NOMBRE1>DIOSELINA</NOMBRE1>
+<NOMBRE2 i:nil="true"/>
+<NUM_FUD_NUM_CASO>BI000012407</NUM_FUD_NUM_CASO>
+<PARAM_HECHO>2</PARAM_HECHO>
+<RELACION>Jefe(a) de hogar</RELACION>
+<RESPONSABLE>Grupos Guerrilleros</RESPONSABLE>
+<TIPO_DESPLA>NO APLICA</TIPO_DESPLA>
+<TIPO_DOCUMENTO>Cédula de Ciudadanía</TIPO_DOCUMENTO>
+<TIPO_VICTIMA>DIRECTA</TIPO_VICTIMA>
+</DatosDetallados>
+<DatosDetallados>
+<APELLIDO1>MORENO</APELLIDO1>
+<APELLIDO2>VARON</APELLIDO2>
+<DEPTO_DECLA>CAQUETÁ</DEPTO_DECLA>
+<DEPTO_OCU>PUTUMAYO</DEPTO_OCU>
+<DISCAPACIDAD>-NINGUNA</DISCAPACIDAD>
+<DOCUMENTO>40612015</DOCUMENTO>
+<ESTADO>Incluido</ESTADO>
+<ETNIA>Ninguna</ETNIA>
+<FECHA_SINIESTRO>2012-11-17T00:00:00</FECHA_SINIESTRO>
+<FUENTE>RUV</FUENTE>
+<F_DECLARACION>2013-03-09T00:00:00</F_DECLARACION>
+<F_NACIMIENTO>1972-09-10T00:00:00</F_NACIMIENTO>
+<F_VALORACION>2013-03-13T00:00:00</F_VALORACION>
+<GENERO>Mujer</GENERO>
+<HECHO>Desplazamiento forzado</HECHO>
+<ID_ANEXO>136445</ID_ANEXO>
+<ID_DECLARACION>2237115</ID_DECLARACION>
+<ID_MIJEFE>10739935</ID_MIJEFE>
+<ID_PERSONA>10675547</ID_PERSONA>
+<ID_REG_PERSONA>10739935</ID_REG_PERSONA>
+<ID_SINIESTRO>258209</ID_SINIESTRO>
+<MUN_DECLA>CURILLO</MUN_DECLA>
+<MUN_OCU>MOCOA</MUN_OCU>
+<NOMBRE1>DIOSELINA</NOMBRE1>
+<NOMBRE2 i:nil="true"/>
+<NUM_FUD_NUM_CASO>BI000012407</NUM_FUD_NUM_CASO>
+<PARAM_HECHO>5</PARAM_HECHO>
+<RELACION>Jefe(a) de hogar</RELACION>
+<RESPONSABLE>Grupos Guerrilleros</RESPONSABLE>
+<TIPO_DESPLA>Individual</TIPO_DESPLA>
+<TIPO_DOCUMENTO>Cédula de Ciudadanía</TIPO_DOCUMENTO>
+<TIPO_VICTIMA>DIRECTA</TIPO_VICTIMA>
+</DatosDetallados>
+<DatosDetallados>
+<APELLIDO1>MORENO</APELLIDO1>
+<APELLIDO2>VARON</APELLIDO2>
+<DEPTO_DECLA>CAQUETÁ</DEPTO_DECLA>
+<DEPTO_OCU>CAQUETÁ</DEPTO_OCU>
+<DISCAPACIDAD>-NINGUNA</DISCAPACIDAD>
+<DOCUMENTO>40612015</DOCUMENTO>
+<ESTADO>No Incluido</ESTADO>
+<ETNIA>Ninguna</ETNIA>
+<FECHA_SINIESTRO>2014-10-25T00:00:00</FECHA_SINIESTRO>
+<FUENTE>RUV</FUENTE>
+<F_DECLARACION>2014-11-06T00:00:00</F_DECLARACION>
+<F_NACIMIENTO>1972-09-10T00:00:00</F_NACIMIENTO>
+<F_VALORACION>2015-02-11T20:37:08</F_VALORACION>
+<GENERO>Mujer</GENERO>
+<HECHO>Amenaza</HECHO>
+<ID_ANEXO>416957</ID_ANEXO>
+<ID_DECLARACION>2847983</ID_DECLARACION>
+<ID_MIJEFE>13011507</ID_MIJEFE>
+<ID_PERSONA>10675547</ID_PERSONA>
+<ID_REG_PERSONA>13011507</ID_REG_PERSONA>
+<ID_SINIESTRO>1237105</ID_SINIESTRO>
+<MUN_DECLA>FLORENCIA</MUN_DECLA>
+<MUN_OCU>CURILLO</MUN_OCU>
+<NOMBRE1>DIOSELINA</NOMBRE1>
+<NOMBRE2 i:nil="true"/>
+<NUM_FUD_NUM_CASO>ND000463186</NUM_FUD_NUM_CASO>
+<PARAM_HECHO>2</PARAM_HECHO>
+<RELACION>Jefe(a) de hogar</RELACION>
+<RESPONSABLE>No Identifica</RESPONSABLE>
+<TIPO_DESPLA>NO APLICA</TIPO_DESPLA>
+<TIPO_DOCUMENTO>Cédula de Ciudadanía</TIPO_DOCUMENTO>
+<TIPO_VICTIMA>DIRECTA</TIPO_VICTIMA>
+</DatosDetallados>
+<DatosDetallados>
+<APELLIDO1>MORENO</APELLIDO1>
+<APELLIDO2>VARON</APELLIDO2>
+<DEPTO_DECLA>CAQUETÁ</DEPTO_DECLA>
+<DEPTO_OCU>CAQUETÁ</DEPTO_OCU>
+<DISCAPACIDAD>-NINGUNA</DISCAPACIDAD>
+<DOCUMENTO>40612015</DOCUMENTO>
+<ESTADO>No Incluido</ESTADO>
+<ETNIA>Ninguna</ETNIA>
+<FECHA_SINIESTRO>2014-10-25T00:00:00</FECHA_SINIESTRO>
+<FUENTE>RUV</FUENTE>
+<F_DECLARACION>2014-11-06T00:00:00</F_DECLARACION>
+<F_NACIMIENTO>1972-09-10T00:00:00</F_NACIMIENTO>
+<F_VALORACION>2015-02-11T20:37:08</F_VALORACION>
+<GENERO>Mujer</GENERO>
+<HECHO>Desplazamiento forzado</HECHO>
+<ID_ANEXO>711747</ID_ANEXO>
+<ID_DECLARACION>2847983</ID_DECLARACION>
+<ID_MIJEFE>13011507</ID_MIJEFE>
+<ID_PERSONA>10675547</ID_PERSONA>
+<ID_REG_PERSONA>13011507</ID_REG_PERSONA>
+<ID_SINIESTRO>1237106</ID_SINIESTRO>
+<MUN_DECLA>FLORENCIA</MUN_DECLA>
+<MUN_OCU>CURILLO</MUN_OCU>
+<NOMBRE1>DIOSELINA</NOMBRE1>
+<NOMBRE2 i:nil="true"/>
+<NUM_FUD_NUM_CASO>ND000463186</NUM_FUD_NUM_CASO>
+<PARAM_HECHO>5</PARAM_HECHO>
+<RELACION>Jefe(a) de hogar</RELACION>
+<RESPONSABLE>No Identifica</RESPONSABLE>
+<TIPO_DESPLA>Individual</TIPO_DESPLA>
+<TIPO_DOCUMENTO>Cédula de Ciudadanía</TIPO_DOCUMENTO>
+<TIPO_VICTIMA>DIRECTA</TIPO_VICTIMA>
+</DatosDetallados>
+</ArrayOfDatosDetallados>
+
+importante 
+<NUM_FUD_NUM_CASO>BI000012407</NUM_FUD_NUM_CASO>, <HECHO>Desplazamiento forzado</HECHO>
+
+ojo popayan que tiene el "FUD" por delante!!!
+
+
+que pasa con <HECHO>Amenaza</HECHO>
+
+PORQUE If (salidas.VictimaSIPOD(i).fechaDeclaracion > "01/Aug/2014") Then ?
+
+
+
+
+
+
+
+
+2 Tarjeta 
+3 Cedula
+
+
+remover FUD , FUD- quitar las letras y dejar solo números?
+
+
+26036799
+
+F2Q06LT#ABM
+2CE4061Y37
+
+
+<ArrayOfAutorizado xmlns="http://schemas.datacontract.org/2004/07/RestServiceAutentica" xmlns:i="http://www.w3.org/2001/XMLSchema-instance">
+<Autorizado>
+<IdUsuario>55806</IdUsuario>
+<Token>139ECE9BBE024308B91EC53B177F0D97</Token>
+</Autorizado>
+</ArrayOfAutorizado>
+
