@@ -1,8 +1,8 @@
 USE [IRDCOL]
 
 declare  @Tipo_Declaracion int ='921' -- desplazado
-declare  @Fecha_Valoracion_Inicial varchar(8) = '20161001'  -- 
-declare  @Fecha_Valoracion_Final varchar(8)='20170430'--
+declare  @Fecha_Valoracion_Inicial varchar(8) = '20170101'  -- 
+declare  @Fecha_Valoracion_Final varchar(8)='20170131'--
 
 declare @Id_Subsidiado int = 106
 declare @Id_Contributivo int = 210
@@ -13,6 +13,11 @@ declare @Id_Seguimiento int = 919
 declare @Id_Antes int = 54
 
 /* Estado_SGSSS_PE ojo "Vinculado" es el mismo tratamiento de "Sin Acceso"  */
+
+update  Personas_Regimen_Salud set Fecha='20170125' where Id in(
+--select * from Personas_Regimen_Salud  where Id in(
+
+select rs_segunda.Id from (
 
 SELECT
  ROW_NUMBER() over ( order by Declaracion.Id, Personas.tipo desc, Personas.edad desc ) as Num,
@@ -199,7 +204,20 @@ where
 Declaracion.Fecha_Valoracion >= @Fecha_Valoracion_Inicial
 And Declaracion.Fecha_Valoracion <= @Fecha_Valoracion_Final
 and Declaracion.Tipo_Declaracion=@Tipo_Declaracion
-Order by personas.id_declaracion, Personas.tipo desc, Personas.edad desc
+--order by personas.id_declaracion, Personas.tipo desc, Personas.edad desc
 
 --and (rs_cerrar.Id_Cerrar!=19 or rs_cerrar.Id_Eps is null or rs_cerrar.Id_Eps=635)
 
+) v
+join Personas_Regimen_Salud rs_segunda
+	on   rs_segunda.Id= ( 
+	select top 1 Personas_Regimen_Salud.Id  from Personas_Regimen_Salud
+	where Personas_Regimen_Salud.Id_Persona=v.Id 
+	and Personas_Regimen_Salud.Id_Tipo_Entrega=@Id_SegundaEntrega -- segunda
+	order by Personas_Regimen_Salud.Fecha desc, Personas_Regimen_Salud.Id desc
+	)
+
+
+where v.Grupo='PP9-007'
+--order by v.Id
+)

@@ -3,7 +3,7 @@ use  [IRDCOL]
 
 declare  @Tipo_Declaracion int ='921' -- desplazado
 declare  @Fecha_Valoracion_Inicial varchar(8) = '20161001'  -- 
-declare  @Fecha_Valoracion_Final varchar(8)='20161130'--
+declare  @Fecha_Valoracion_Final varchar(8)='20170430'--
 
 declare  @Tipo_Persona varchar(1) ='D';
 

@@ -17,7 +17,7 @@ set @id_segunda=918
 set  @id_seguimiento=919
 set @Id_Regional=null
 set @FechaAtencionInicial='20161001'
-set @FechaAtencionFinal='20161130'
+set @FechaAtencionFinal='20170430'
 set @FechaCorte=@FechaAtencionFinal
 
 select 
